@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الاكاديمية الشرطية - اختبار الرتب العسكرية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Cairo', sans-serif; }</style>
+</head>
+<body class="bg-[#080B12] text-slate-200 font-sans antialiased min-h-screen flex flex-col justify-between">
+
+    <header class="border-b border-slate-800/50 bg-[#0a0e16] sticky top-0 z-50">
+        <div class="max-w-[96rem] mx-auto px-6 py-2.5 flex items-center justify-between">
+            <div class="flex items-center space-x-4 space-x-reverse">
+                <a href="index.html" class="text-slate-400 hover:text-white text-sm font-bold bg-[#0c1019] px-3.5 py-2 rounded-lg border border-slate-700 flex items-center gap-1.5"><span>🏠</span> الرئيسية</a>
+                <a href="tests.html" class="text-amber-400 text-sm font-bold bg-[#0c1019] px-3.5 py-2 rounded-lg border border-slate-700 flex items-center gap-1.5"><span>📝</span> الاختبار</a>
+                <a href="admin.html" class="text-slate-400 hover:text-white text-sm font-bold bg-[#0c1019] px-3.5 py-2 rounded-lg border border-slate-700 flex items-center gap-1.5"><span>⚙️</span> لوحة التحكم</a>
+            </div>
+            <div class="text-white font-black text-sm">أكاديمية شرطة لوس سانتوس</div>
+        </div>
+    </header>
+
+    <main class="flex-grow flex flex-col items-center justify-center p-6 w-full max-w-4xl mx-auto">
+        
+        <!-- تنبيه إذا كان لديه طلب قيد الانتظار أو مقبول -->
+        <div id="blockedView" class="hidden bg-[#0c1019] border-2 border-amber-500/30 p-8 rounded-3xl shadow-2xl w-full text-center space-y-4">
+            <div class="text-amber-400 text-4xl">⏳</div>
+            <h1 class="text-xl font-black text-white">لديك طلب اختبار سابق قيد المراجعة أو تم قبوله</h1>
+            <p class="text-slate-400 text-sm" id="blockReasonText">لا يمكنك إجراء اختبار جديد حالياً حتى يتم البت في طلبك أو منحك فرصة ثانية من قبل الإدارة.</p>
+            <a href="index.html" class="inline-block bg-slate-800 hover:bg-slate-700 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition">العودة للصفحة الرئيسية</a>
+        </div>
+
+        <!-- الخطوة 1 -->
+        <div id="step1" class="bg-[#0c1019] border-2 border-slate-800 p-8 rounded-3xl shadow-2xl w-full space-y-6">
+            <div class="text-center">
+                <h1 class="text-2xl font-black text-amber-400">بوابة اختبارات الرتب العسكرية</h1>
+                <p class="text-slate-400 text-xs mt-1">الرجاء إدخال اسمك وبياناتك لبدء الاختبار</p>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1.5">اسمك:</label>
+                    <input type="text" id="fullName" placeholder="اكتب اسمك هنا..." class="w-full bg-[#141a27] border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-amber-400">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 mb-1.5">رقم اليونت (Call Sign):</label>
+                        <input type="text" id="callSign" placeholder="مثال: A-12" class="w-full bg-[#141a27] border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-amber-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 mb-1.5">أيدي ديسكورد:</label>
+                        <input type="text" id="discordUser" placeholder="مثال: username#0000" class="w-full bg-[#141a27] border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-amber-400">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1.5">اختر الرتبة المستهدفة للاختبار:</label>
+                    <select id="targetRank" class="w-full bg-[#141a27] border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-amber-400">
+                        <option value="Officer 1">Officer 1</option>
+                        <option value="Officer 2">Officer 2</option>
+                        <option value="Officer 3">Officer 3</option>
+                        <option value="Senior Officer">Senior Officer</option>
+                        <option value="Sergeant">Sergeant</option>
+                        <option value="First Sergeant">First Sergeant</option>
+                        <option value="Staff Sergeant">Staff Sergeant</option>
+                        <option value="Lieutenant">Lieutenant</option>
+                    </select>
+                </div>
+            </div>
+
+            <button onclick="startExam()" class="w-full bg-amber-400 hover:bg-amber-500 text-slate-950 font-black py-3.5 rounded-xl transition text-sm shadow-lg">
+                التالي - بدء الأسئلة 🚀
+            </button>
+        </div>
+
+        <!-- الخطوة 2 -->
+        <div id="step2" class="hidden bg-[#0c1019] border-2 border-slate-800 p-8 rounded-3xl shadow-2xl w-full space-y-6">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                <div>
+                    <h1 class="text-xl font-black text-amber-400">أسئلة الاختبار</h1>
+                    <span id="examRankBadge" class="inline-block mt-1 bg-amber-400/10 text-amber-400 text-xs px-3 py-1 rounded-lg border border-amber-400/20 font-bold"></span>
+                </div>
+                <!-- عداد الوقت -->
+                <div class="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-2 rounded-xl text-sm font-black flex items-center gap-2">
+                    <span>⏱️ الوقت المتبقي:</span>
+                    <span id="timerDisplay">00:00</span>
+                </div>
+            </div>
+            
+            <div id="dynamicQuestionsContainer" class="space-y-6"></div>
+            
+            <button onclick="submitExam()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-xl transition text-sm shadow-lg">
+                إرسال الاختبار للمشرفين 💾
+            </button>
+        </div>
+
+        <!-- الخطوة 3 -->
+        <div id="step3" class="hidden bg-[#0c1019] border-2 border-slate-800 p-8 rounded-3xl shadow-2xl w-full text-center space-y-6">
+            <div class="text-4xl">🎉</div>
+            <h1 class="text-2xl font-black text-white">تم إرسال اختبارك بنجاح!</h1>
+            <p class="text-slate-400 text-sm">أنت الآن في قائمة الانتظار، بانتظار تصحيح المسؤول ومنحك النتيجة والقرار (قبول، رفض، أو فرصة ثانية).</p>
+            <a href="index.html" class="inline-block bg-slate-800 hover:bg-slate-700 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition">العودة للرئيسية</a>
+        </div>
+
+    </main>
+
+    <footer class="bg-[#0a0e16] border-t border-slate-800 py-4 text-center text-xs text-slate-500">جميع الحقوق محفوظة © أكاديمية شرطة لوس سانتوس 2026</footer>
+
+    <script>
+        let currentExamData = { fullName: '', callSign: '', discordUser: '', targetRank: '', questionsList: [] };
+        let timerInterval = null;
+
+        function checkUserStatus() {
+            let submissions = JSON.parse(localStorage.getItem('lspd_submissions')) || [];
+            let activeSub = submissions.find(s => s.decision === 'قيد المراجعة' || s.decision === 'قبول');
+            if (activeSub) {
+                document.getElementById('step1').classList.add('hidden');
+                document.getElementById('blockedView').classList.remove('hidden');
+            }
+        }
+
+        function startExam() {
+            let fullName = document.getElementById('fullName').value.trim();
+            let callSign = document.getElementById('callSign').value.trim();
+            let discordUser = document.getElementById('discordUser').value.trim();
+            let targetRank = document.getElementById('targetRank').value;
+
+            if (!fullName || !callSign || !discordUser) {
+                alert("الرجاء تعبئة اسمك ورقم اليونت وديسكورد!");
+                return;
+            }
+
+            let savedData = JSON.parse(localStorage.getItem('questions_' + targetRank));
+            if (!savedData || !savedData.questions || savedData.questions.length === 0) {
+                alert("عذراً، لم يقم المسؤول بإضافة أسئلة لهذه الرتبة (" + targetRank + ") في لوحة التحكم بعد.");
+                return;
+            }
+
+            currentExamData.fullName = fullName;
+            currentExamData.callSign = callSign;
+            currentExamData.discordUser = discordUser;
+            currentExamData.targetRank = targetRank;
+            currentExamData.questionsList = savedData.questions;
+
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.remove('hidden');
+            document.getElementById('examRankBadge').innerText = targetRank;
+
+            let container = document.getElementById('dynamicQuestionsContainer');
+            container.innerHTML = '';
+            
+            currentExamData.questionsList.forEach((q, index) => {
+                let div = document.createElement('div');
+                div.className = "bg-[#141a27] border border-slate-800 p-5 rounded-2xl space-y-3";
+                
+                let qText = q.text || q.question || '';
+                let qHtml = `<label class="block text-sm font-bold text-white">السؤال ${index + 1}: ${qText}</label>`;
+                
+                let isMultiple = (
+                    q.type === 'mcq' || 
+                    q.type === 'ضع دائرة' || 
+                    q.type === 'multiple' || 
+                    (q.options && q.options.length > 0)
+                );
+
+                if (isMultiple && q.options && q.options.length > 0) {
+                    qHtml += `<div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 mt-2">`;
+                    q.options.forEach((opt) => {
+                        if (opt && opt.trim() !== '') {
+                            qHtml += `
+                                <label class="flex items-center gap-3 bg-[#0c1019] border border-slate-700/80 p-3 rounded-xl cursor-pointer hover:border-amber-400/50 transition">
+                                    <input type="radio" name="answer_${index}" value="${opt}" class="accent-amber-400">
+                                    <span class="text-xs text-slate-200 font-semibold">${opt}</span>
+                                </label>
+                            `;
+                        }
+                    });
+                    qHtml += `</div>`;
+                } else {
+                    qHtml += `<input type="text" id="answer_${index}" placeholder="اكتب إجابتك هنا..." class="w-full bg-[#0c1019] border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-400">`;
+                }
+
+                div.innerHTML = qHtml;
+                container.appendChild(div);
+            });
+
+            let durationMinutes = parseInt(savedData.timerMinutes) || 5;
+            startTimer(durationMinutes * 60);
+        }
+
+        function startTimer(duration) {
+            let timer = duration, minutes, seconds;
+            let display = document.getElementById('timerDisplay');
+            
+            if (timerInterval) clearInterval(timerInterval);
+
+            timerInterval = setInterval(function () {
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                display.textContent = minutes + ":" + seconds;
+
+                if (--timer < 0) {
+                    clearInterval(timerInterval);
+                    alert("انتهى الوقت المحدد للاختبار! سيتم إرسال إجاباتك تلقائياً.");
+                    submitExam();
+                }
+            }, 1000);
+        }
+
+        function submitExam() {
+            if (timerInterval) clearInterval(timerInterval);
+
+            let answersDetailsHTML = '';
+            currentExamData.questionsList.forEach((q, index) => {
+                let userAns = '';
+                let qText = q.text || q.question || '';
+                let isMultiple = (
+                    q.type === 'mcq' || 
+                    q.type === 'ضع دائرة' || 
+                    q.type === 'multiple' || 
+                    (q.options && q.options.length > 0)
+                );
+
+                if (isMultiple && q.options && q.options.length > 0) {
+                    let selectedOpt = document.querySelector(`input[name="answer_${index}"]:checked`);
+                    userAns = selectedOpt ? selectedOpt.value : 'لم يتم اختيار إجابة';
+                } else {
+                    let ansInput = document.getElementById('answer_' + index);
+                    userAns = ansInput ? ansInput.value.trim() : '';
+                    if (!userAns) userAns = 'لم يجيب';
+                }
+                
+                // حفظ الإجابة الصحيحة المعرفة من الأدمن ضمن تفاصيل الإجابات لكي تظهر للأدمن بوضوح
+                let correctAnsText = q.correctAnswer || 'غير محدد';
+
+                answersDetailsHTML += `<div class="mb-3 pb-3 border-b border-slate-800 last:border-0">
+                    <p class="font-bold text-white">• س ${index+1} (${isMultiple ? 'ضع دائرة' : 'مقالي'}): ${qText}</p>
+                    <p class="text-slate-400 text-xs mr-4 mt-1">إجابة المتقدم: <span class="text-amber-400 font-semibold">${userAns}</span></p>
+                    <p class="text-emerald-400 text-xs mr-4 mt-1">✓ الإجابة الصحيحة المعتمدة: <span class="font-semibold">${correctAnsText}</span></p>
+                </div>`;
+            });
+
+            let submissionRecord = {
+                fullName: currentExamData.fullName,
+                callSign: currentExamData.callSign,
+                discordUser: currentExamData.discordUser,
+                targetRank: currentExamData.targetRank,
+                percentage: 'قيد التقييم',
+                qualified: 'قيد التقييم',
+                decision: 'قيد المراجعة',
+                answersDetails: answersDetailsHTML
+            };
+
+            let submissions = JSON.parse(localStorage.getItem('lspd_submissions')) || [];
+            submissions.push(submissionRecord);
+            localStorage.setItem('lspd_submissions', JSON.stringify(submissions));
+
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step3').classList.remove('hidden');
+        }
+
+        window.onload = checkUserStatus;
+    </script>
+</body>
+</html>
