@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم والسيطرة - أكاديمية شرطة لوس سانتوس</title>
+    <title>لوحة التحكم - LSPD</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>body { font-family: 'Cairo', sans-serif; }</style>
 </head>
 <body class="bg-[#080B12] text-slate-200 font-sans antialiased min-h-screen flex flex-col justify-between">
-
+    <!-- الهيدر -->
     <header class="border-b border-slate-800/50 bg-[#0a0e16] sticky top-0 z-50">
         <div class="max-w-[96rem] mx-auto px-6 py-2.5 flex items-center justify-between">
             <div class="flex items-center space-x-4 space-x-reverse">
@@ -21,407 +21,181 @@
         </div>
     </header>
 
-    <main class="flex-grow flex flex-col items-center justify-start p-6 relative w-full max-w-7xl mx-auto">
-        
-        <div id="errorView" class="hidden text-center bg-[#0c1019] border-2 border-red-500/30 p-10 rounded-3xl shadow-2xl max-w-lg w-full my-auto">
+    <main class="flex-grow p-6 w-full max-w-7xl mx-auto">
+        <!-- شاشة الخطأ / تسجيل الدخول المخفي -->
+        <div id="errorView" class="hidden text-center bg-[#0c1019] border-2 border-red-500/30 p-10 rounded-3xl w-full max-w-lg mx-auto mt-20">
             <div class="text-red-500 text-4xl mb-4">🚫</div>
-            <h1 class="text-2xl font-black text-white mb-2">غير مصرح لك بالوصول</h1>
-            <a href="index.html" class="inline-block bg-slate-800 text-white font-bold px-6 py-2.5 rounded-xl text-sm mt-4">العودة</a>
+            <h1 class="text-2xl font-black text-white">غير مصرح لك بالوصول</h1>
         </div>
 
-        <div id="adminView" class="hidden w-full space-y-8 py-6">
+        <!-- لوحة التحكم -->
+        <div id="adminView" class="hidden space-y-6">
+            <div class="bg-[#0c1019] border-2 border-slate-800 p-6 rounded-3xl flex justify-between items-center">
+                <h1 class="text-2xl font-black text-amber-400">لوحة التحكم والتصحيح</h1>
+                <button onclick="logoutAdmin()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm font-bold text-white transition">تسجيل خروج</button>
+            </div>
+
+            <!-- الأزرار العلوية للأقسام -->
+            <div class="flex gap-2 mb-4">
+                <button onclick="switchTab('results')" id="tabBtn-results" class="tab-btn bg-amber-400 text-slate-950 font-bold px-6 py-3 rounded-xl text-sm flex-1">التصحيح وتقييم النتائج</button>
+                <button onclick="switchTab('questions')" id="tabBtn-questions" class="tab-btn bg-[#0c1019] text-slate-300 border border-slate-800 font-bold px-6 py-3 rounded-xl text-sm flex-1">إدارة الأسئلة</button>
+                <button onclick="switchTab('decisions')" id="tabBtn-decisions" class="tab-btn bg-[#0c1019] text-slate-300 border border-slate-800 font-bold px-6 py-3 rounded-xl text-sm flex-1">القبول والرفض</button>
+                <button onclick="switchTab('database')" id="tabBtn-database" class="tab-btn bg-[#0c1019] text-slate-300 border border-slate-800 font-bold px-6 py-3 rounded-xl text-sm flex-1">بيانات المختبرين</button>
+            </div>
+
+            <!-- تبويب التصحيح -->
+            <div id="tab-results" class="tab-content">
+                <div id="resultsList" class="space-y-4"></div>
+            </div>
+
+            <!-- تبويب الأسئلة -->
+            <div id="tab-questions" class="tab-content hidden">
+                <div class="bg-[#0c1019] border border-slate-800 p-6 rounded-2xl space-y-4">
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label class="text-xs text-slate-400">الرتبة:</label>
+                            <select id="qRank" onchange="loadQ()" class="w-full bg-[#141a27] border border-slate-700 rounded p-2 text-white"><option>Officer 1</option><option>Officer 2</option><option>Officer 3</option><option>Senior Officer</option><option>Sergeant</option><option>Lieutenant</option></select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-400">عدد الأسئلة:</label>
+                            <input type="number" id="qCount" value="3" onchange="drawQ()" class="w-full bg-[#141a27] border border-slate-700 rounded p-2 text-white">
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-400">الوقت (دقائق):</label>
+                            <input type="number" id="qTime" value="5" class="w-full bg-[#141a27] border border-slate-700 rounded p-2 text-white">
+                        </div>
+                    </div>
+                    <div id="qBox" class="space-y-3 pt-4"></div>
+                    <button onclick="saveQ()" class="w-full bg-amber-400 py-3 rounded font-bold text-slate-900">حفظ</button>
+                </div>
+            </div>
+
+            <!-- تبويب القرارات -->
+            <div id="tab-decisions" class="tab-content hidden">
+                <div id="decisionsList" class="space-y-3"></div>
+            </div>
             
-            <div class="bg-[#0c1019] border-2 border-slate-800 p-8 rounded-3xl shadow-xl flex justify-between items-center">
-                <div>
-                    <h1 class="text-3xl font-black text-amber-400">لوحة التحكم والتصحيح</h1>
-                    <p class="text-slate-400 text-sm mt-1">تقييم المختبرين، كتابة النسبة يدوياً، وتحديد التأهيل والقبول.</p>
-                </div>
-                <button onclick="logoutAdmin()" class="bg-red-600 hover:bg-red-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition">تسجيل خروج</button>
-            </div>
-
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <button onclick="switchTab('results')" id="tabBtn-results" class="tab-btn bg-amber-400 text-slate-950 font-black p-4 rounded-2xl text-sm transition flex items-center justify-center gap-2"><span>📊</span> تقييم النتائج</button>
-                <button onclick="switchTab('questions')" id="tabBtn-questions" class="tab-btn bg-[#0c1019] border-2 border-slate-800 text-slate-300 font-bold p-4 rounded-2xl text-sm transition flex items-center justify-center gap-2"><span>📋</span> إدارة الأسئلة</button>
-                <button onclick="switchTab('decisions')" id="tabBtn-decisions" class="tab-btn bg-[#0c1019] border-2 border-slate-800 text-slate-300 font-bold p-4 rounded-2xl text-sm transition flex items-center justify-center gap-2"><span>⚖️</span> القبول والرفض</button>
-                <button onclick="switchTab('database')" id="tabBtn-database" class="tab-btn bg-[#0c1019] border-2 border-slate-800 text-slate-300 font-bold p-4 rounded-2xl text-sm transition flex items-center justify-center gap-2"><span>🗂️</span> بيانات المختبرين</button>
-            </div>
-
-            <div id="tab-results" class="tab-content space-y-6">
-                <div class="bg-[#0c1019] border-2 border-slate-800 p-6 rounded-3xl shadow-xl">
-                    <h2 class="text-xl font-black text-amber-400 mb-4">📊 فحص الإجابات والتقارير وتقييم النسبة</h2>
-                    <div id="resultsList" class="space-y-4"></div>
+            <!-- السجل -->
+            <div id="tab-database" class="tab-content hidden">
+                <div class="bg-[#0c1019] border border-slate-800 p-6 rounded-2xl overflow-x-auto">
+                    <table class="w-full text-right text-xs text-slate-300"><thead class="bg-[#141a27]"><tr class="border-b border-slate-700">
+                        <th class="p-3">الاسم</th><th class="p-3">الرتبة</th><th class="p-3">النسبة</th><th class="p-3">القرار</th>
+                    </tr></thead><tbody id="dbTbody"></tbody></table>
                 </div>
             </div>
-
-            <div id="tab-questions" class="tab-content hidden space-y-6">
-                <div class="bg-[#0c1019] border-2 border-slate-800 p-8 rounded-3xl shadow-xl space-y-6">
-                    <h2 class="text-xl font-black text-amber-400">إدارة وتعديل أسئلة الرتب ووقت الاختبار</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-400 mb-2">اختر الرتبة:</label>
-                            <select id="questionRankSelect" onchange="loadRankQuestions()" class="w-full bg-[#141a27] border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200">
-                                <option value="Officer 1">Officer 1</option>
-                                <option value="Officer 2">Officer 2</option>
-                                <option value="Officer 3">Officer 3</option>
-                                <option value="Senior Officer">Senior Officer</option>
-                                <option value="Sergeant">Sergeant</option>
-                                <option value="First Sergeant">First Sergeant</option>
-                                <option value="Staff Sergeant">Staff Sergeant</option>
-                                <option value="Lieutenant">Lieutenant</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-400 mb-2">عدد الأسئلة:</label>
-                            <input type="number" id="questionCountInput" min="1" max="15" value="3" onchange="generateQuestionInputs()" class="w-full bg-[#141a27] border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-400 mb-2">وقت الاختبار (بالدقائق):</label>
-                            <input type="number" id="timerMinutesInput" min="1" max="120" value="5" class="w-full bg-[#141a27] border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200">
-                        </div>
-                    </div>
-                    <div id="questionsContainer" class="space-y-4 pt-4 border-t border-slate-800"></div>
-                    <button onclick="saveRankQuestions()" class="w-full bg-amber-400 text-slate-950 font-black py-3.5 rounded-xl transition text-sm">حفظ الأسئلة ووقت الاختبار 💾</button>
-                </div>
-            </div>
-
-            <div id="tab-decisions" class="tab-content hidden space-y-6">
-                <div class="bg-[#0c1019] border-2 border-slate-800 p-6 rounded-3xl shadow-xl">
-                    <h2 class="text-xl font-black text-amber-400 mb-4">⚖️ إدارة طلبات القبول والرفض والفرصة الثانية</h2>
-                    <div id="decisionsList" class="space-y-4"></div>
-                </div>
-            </div>
-
-            <div id="tab-database" class="tab-content hidden space-y-6">
-                <div class="bg-[#0c1019] border-2 border-slate-800 p-6 rounded-3xl shadow-xl">
-                    <h2 class="text-xl font-black text-amber-400 mb-4">🗂️ السجل الشامل لبيانات المختبرين</h2>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-right text-xs text-slate-300">
-                            <thead class="bg-[#141a27] text-slate-400 border-b border-slate-800">
-                                <tr>
-                                    <th class="p-3.5 rounded-r-xl">اسم المتقدم</th>
-                                    <th class="p-3.5">الرتبة</th>
-                                    <th class="p-3.5">اليوونت</th>
-                                    <th class="p-3.5">النسبة</th>
-                                    <th class="p-3.5">التأهيل</th>
-                                    <th class="p-3.5">القرار النهائي</th>
-                                    <th class="p-3.5 rounded-l-xl text-center">إجراء (X)</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-800/60" id="databaseTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
         </div>
-
-        <div class="absolute bottom-3 left-3 z-50">
-            <input type="password" id="secretCodeInput" placeholder="ادخل الكود..." onkeypress="checkSecretCode(event)" class="bg-[#0a0e16] border border-slate-800/80 text-slate-300 text-[10px] px-2.5 py-1.5 rounded-lg w-24 opacity-20 hover:opacity-100">
-        </div>
+        
+        <input type="password" id="secret" placeholder="كود الإدارة..." onkeypress="if(event.key==='Enter') login(this.value)" class="fixed bottom-2 left-2 bg-[#0a0e16] border border-slate-800 text-[10px] p-1 w-20 opacity-20 hover:opacity-100 outline-none text-white rounded">
     </main>
 
-    <footer class="bg-[#0a0e16] border-t border-slate-800 py-4 text-center text-xs text-slate-500">جميع الحقوق محفوظة © أكاديمية شرطة لوس سانتوس 2026</footer>
-
     <script>
-        function checkAccess() {
+        function checkAcc() {
             if (localStorage.getItem('isAdminLoggedIn') === 'true') {
                 document.getElementById('adminView').classList.remove('hidden');
                 document.getElementById('errorView').classList.add('hidden');
-                generateQuestionInputs();
-                loadSubmissionsData();
+                loadData(); drawQ();
             } else {
                 document.getElementById('errorView').classList.remove('hidden');
-                document.getElementById('adminView').classList.add('hidden');
             }
         }
-
-        function checkSecretCode(event) {
-            if (event.key === 'Enter') {
-                let code = document.getElementById('secretCodeInput').value.trim();
-                if (code === '(F!GtqAX!GZ8VU/M)' || code === '3HH3') {
-                    localStorage.setItem('isAdminLoggedIn', 'true');
-                    alert("تم تفعيل صلاحيات التحكم بنجاح.");
-                    checkAccess();
-                } else {
-                    alert("رمز السر غير صحيح!");
-                }
-            }
+        function login(val) { if(val==='3HH3'||val==='(F!GtqAX!GZ8VU/M)') { localStorage.setItem('isAdminLoggedIn','true'); checkAcc(); } }
+        function logoutAdmin() { localStorage.removeItem('isAdminLoggedIn'); location.reload(); }
+        function switchTab(id) {
+            document.querySelectorAll('.tab-content').forEach(e => e.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(b => { b.className = "tab-btn bg-[#0c1019] text-slate-300 border border-slate-800 font-bold px-6 py-3 rounded-xl text-sm flex-1"; });
+            document.getElementById('tab-'+id).classList.remove('hidden');
+            document.getElementById('tabBtn-'+id).className = "tab-btn bg-amber-400 text-slate-950 font-bold px-6 py-3 rounded-xl text-sm flex-1";
         }
 
-        function logoutAdmin() {
-            localStorage.removeItem('isAdminLoggedIn');
-            checkAccess();
-        }
-
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('bg-amber-400', 'text-slate-950', 'font-black');
-                btn.classList.add('bg-[#0c1019]', 'border-2', 'border-slate-800', 'text-slate-300', 'font-bold');
-            });
-            document.getElementById('tab-' + tabId).classList.remove('hidden');
-            let activeBtn = document.getElementById('tabBtn-' + tabId);
-            activeBtn.classList.remove('bg-[#0c1019]', 'border-2', 'border-slate-800', 'text-slate-300', 'font-bold');
-            activeBtn.classList.add('bg-amber-400', 'text-slate-950', 'font-black');
-        }
-
-        function loadSubmissionsData() {
-            let submissions = JSON.parse(localStorage.getItem('lspd_submissions')) || [];
-            let resultsContainer = document.getElementById('resultsList');
-            let decisionsContainer = document.getElementById('decisionsList');
-            let tableBody = document.getElementById('databaseTableBody');
-
-            resultsContainer.innerHTML = '';
-            decisionsContainer.innerHTML = '';
-            tableBody.innerHTML = '';
-
-            if (submissions.length === 0) {
-                resultsContainer.innerHTML = `<div class="text-center text-slate-500 py-8 text-xs">لا توجد نتائج مسجلة لاختبارات حتى الآن.</div>`;
-                decisionsContainer.innerHTML = `<div class="text-center text-slate-500 py-8 text-xs">لا توجد طلبات جديدة.</div>`;
-                tableBody.innerHTML = `<tr><td colspan="7" class="text-center text-slate-500 py-8">لا توجد سجلات.</td></tr>`;
-                return;
-            }
-
-            submissions.forEach((sub, index) => {
-                let qualificationBadge = sub.qualified === 'مؤهل' ? `<span class="bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20 font-bold">مؤهل</span>` : (sub.qualified === 'غير مؤهل' ? `<span class="bg-red-500/10 text-red-400 px-2 py-0.5 rounded border border-red-500/20 font-bold">غير مؤهل</span>` : `<span class="bg-slate-500/10 text-slate-400 px-2 py-0.5 rounded">قيد التقييم</span>`);
-                let decisionLabel = sub.decision || 'قيد المراجعة';
-
-                let resDiv = document.createElement('div');
-                resDiv.className = "bg-[#141a27] border border-slate-800 p-5 rounded-2xl flex flex-col gap-4 relative";
-                
-                // تحديث مكان عرض التفاصيل ليشمل الاختبار النظري + التقرير العملي
-                resDiv.innerHTML = `
-                    <button onclick="deleteRecord(${index})" title="حذف السجل" class="absolute top-3 left-3 text-red-500 hover:text-red-400 font-black text-sm px-2 py-0.5 bg-red-500/10 rounded-lg border border-red-500/20">✕</button>
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <div>
-                            <div class="flex items-center gap-3">
-                                <span class="font-black text-white text-base">${sub.fullName}</span>
-                                <span class="bg-amber-400/10 text-amber-400 text-xs px-2.5 py-1 rounded-lg border border-amber-400/20 font-bold">${sub.targetRank}</span>
-                            </div>
-                            <div class="text-xs text-slate-400 mt-2 flex flex-wrap gap-4">
-                                <span>اليوونت: <strong class="text-slate-200">${sub.callSign}</strong></span>
-                                <span>ديسكورد: <strong class="text-slate-200">${sub.discordUser}</strong></span>
-                            </div>
-                        </div>
-                        <button onclick="toggleDetails(${index})" id="revealBtn_${index}" class="bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white font-bold px-4 py-2 rounded-xl border border-blue-500/30 transition text-xs">
-                            🔍 كشف البيانات
-                        </button>
+        function loadData() {
+            let subs = JSON.parse(localStorage.getItem('lspd_submissions')) || [];
+            document.getElementById('resultsList').innerHTML = ''; document.getElementById('decisionsList').innerHTML = ''; document.getElementById('dbTbody').innerHTML = '';
+            
+            subs.forEach((s, i) => {
+                // قسم التصحيح
+                document.getElementById('resultsList').innerHTML += `
+                <div class="bg-[#141a27] border border-slate-700 p-5 rounded-2xl relative">
+                    <button onclick="del(${i})" class="absolute top-3 left-3 text-red-500 text-xs">✕ حذف</button>
+                    <div class="flex justify-between items-center mb-3">
+                        <div><strong class="text-white">${s.fullName}</strong> <span class="bg-blue-500/20 text-blue-400 text-[10px] px-2 rounded">${s.targetRank}</span></div>
+                        <button onclick="document.getElementById('det_${i}').classList.toggle('hidden')" class="bg-slate-800 px-3 py-1 rounded text-xs">كشف الإجابات</button>
                     </div>
-                    
-                    <div id="detailsContainer_${index}" class="hidden space-y-4 pt-4 border-t border-slate-800">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- الإجابات النظرية -->
-                            <div class="bg-[#0c1019] border border-slate-700 p-4 rounded-xl text-xs space-y-2 text-slate-300">
-                                <h3 class="font-bold text-amber-400 text-sm border-b border-slate-700 pb-2 mb-3">📝 الاختبار النظري:</h3>
-                                ${sub.answersDetails || 'لا توجد إجابات'}
+                    <div id="det_${i}" class="hidden space-y-4 pt-3 border-t border-slate-700">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="bg-[#0c1019] p-4 rounded-lg border border-slate-800 text-xs text-slate-300">
+                                <h3 class="text-amber-400 font-bold mb-2">📝 الاختبار النظري</h3>
+                                ${s.answersDetails}
                             </div>
-                            
-                            <!-- التقرير العملي MDT -->
-                            <div class="bg-[#0c1019] border border-slate-700 p-4 rounded-xl text-xs space-y-2 text-slate-300">
-                                <h3 class="font-bold text-blue-400 text-sm border-b border-slate-700 pb-2 mb-3">💻 الاختبار العملي (تقرير القضية):</h3>
-                                ${sub.mdtReport || '<p class="text-slate-500 text-center py-4">لم يقم بتقديم تقرير عملي.</p>'}
+                            <div class="bg-[#0c1019] p-4 rounded-lg border border-slate-800">
+                                <h3 class="text-blue-400 font-bold mb-2 text-xs">💻 محاكاة MDT</h3>
+                                ${s.mdtReport}
                             </div>
                         </div>
-
-                        <div class="bg-[#0c1019] border border-slate-800 p-4 rounded-xl flex flex-col md:flex-row items-center justify-between gap-4">
-                            <div class="flex items-center gap-3 w-full md:w-auto">
-                                <label class="text-xs font-bold text-slate-300">النسبة المئوية:</label>
-                                <input type="text" id="manualScore_${index}" value="${sub.percentage !== 'قيد التقييم' ? sub.percentage : ''}" placeholder="مثال: 80%" class="bg-[#141a27] border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white w-28 text-center focus:outline-none focus:border-amber-400">
-                            </div>
-                            <div class="flex items-center gap-3 w-full md:w-auto">
-                                <label class="text-xs font-bold text-slate-300">الحالة:</label>
-                                <select id="manualQual_${index}" class="bg-[#141a27] border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-400">
-                                    <option value="مؤهل" ${sub.qualified === 'مؤهل' ? 'selected' : ''}>مؤهل</option>
-                                    <option value="غير مؤهل" ${sub.qualified === 'غير مؤهل' ? 'selected' : ''}>غير مؤهل</option>
-                                </select>
-                            </div>
-                            <button onclick="saveManualEvaluation(${index})" class="w-full md:w-auto bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-xl transition text-xs shadow">
-                                حفظ التقييم 💾
-                            </button>
+                        <div class="flex gap-2 bg-[#0c1019] p-2 rounded">
+                            <input type="text" id="score_${i}" value="${s.percentage !== 'قيد التقييم' ? s.percentage : ''}" placeholder="النسبة %" class="bg-[#141a27] p-1.5 text-xs text-white rounded outline-none border border-slate-700">
+                            <select id="qual_${i}" class="bg-[#141a27] p-1.5 text-xs text-white rounded outline-none border border-slate-700"><option ${s.qualified=='مؤهل'?'selected':''}>مؤهل</option><option ${s.qualified=='غير مؤهل'?'selected':''}>غير مؤهل</option></select>
+                            <button onclick="saveEval(${i})" class="bg-amber-400 text-black px-4 rounded text-xs font-bold">حفظ</button>
                         </div>
                     </div>
-                `;
-                resultsContainer.appendChild(resDiv);
+                </div>`;
 
-                let decDiv = document.createElement('div');
-                decDiv.className = "bg-[#141a27] border border-slate-800 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative";
-                decDiv.innerHTML = `
-                    <button onclick="deleteRecord(${index})" title="حذف السجل" class="absolute top-3 left-3 text-red-500 hover:text-red-400 font-black text-sm px-2 py-0.5 bg-red-500/10 rounded-lg border border-red-500/20">✕</button>
-                    <div>
-                        <div class="flex items-center gap-3">
-                            <span class="font-black text-white text-base">${sub.fullName}</span>
-                            <span class="bg-blue-500/10 text-blue-400 text-xs px-2.5 py-1 rounded-lg border border-blue-500/20 font-bold">${sub.targetRank}</span>
-                        </div>
-                        <div class="text-xs text-slate-400 mt-2 flex gap-4">
-                            <span>النسبة: <strong class="text-amber-400">${sub.percentage}</strong></span>
-                            <span>التأهيل: ${qualificationBadge}</span>
-                        </div>
+                // قسم القرارات
+                document.getElementById('decisionsList').innerHTML += `
+                <div class="bg-[#141a27] border border-slate-700 p-4 rounded-xl flex justify-between items-center">
+                    <div><span class="text-white text-sm font-bold">${s.fullName}</span> <span class="text-xs text-slate-400">(${s.percentage})</span></div>
+                    <div class="flex gap-2">
+                        <button onclick="setDec(${i}, 'قبول')" class="bg-emerald-600 px-3 py-1 rounded text-xs text-white">قبول</button>
+                        <button onclick="setDec(${i}, 'رفض')" class="bg-red-600 px-3 py-1 rounded text-xs text-white">رفض</button>
+                        <button onclick="setDec(${i}, 'فرصة ثانية')" class="bg-amber-600 px-3 py-1 rounded text-xs text-white">إعادة</button>
                     </div>
-                    <div class="flex items-center gap-2 w-full md:w-auto justify-end">
-                        <button onclick="updateDecision(${index}, 'قبول')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow">قبول</button>
-                        <button onclick="updateDecision(${index}, 'رفض')" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow">رفض</button>
-                        <button onclick="updateDecision(${index}, 'فرصة ثانية')" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow">فرصة ثانية</button>
-                    </div>
-                `;
-                decisionsContainer.appendChild(decDiv);
+                </div>`;
 
-                let row = document.createElement('tr');
-                row.className = "hover:bg-[#141a27]/50 transition";
-                row.innerHTML = `
-                    <td class="p-3.5 font-bold text-white">${sub.fullName}</td>
-                    <td class="p-3.5">${sub.targetRank}</td>
-                    <td class="p-3.5">${sub.callSign}</td>
-                    <td class="p-3.5 text-amber-400 font-bold">${sub.percentage}</td>
-                    <td class="p-3.5">${qualificationBadge}</td>
-                    <td class="p-3.5"><span class="bg-blue-500/10 text-blue-400 px-2.5 py-1 rounded border border-blue-500/20 font-bold">${decisionLabel}</span></td>
-                    <td class="p-3.5 text-center">
-                        <button onclick="deleteRecord(${index})" class="bg-red-600/25 hover:bg-red-600 text-red-400 hover:text-white font-black px-3 py-1.5 rounded-xl border border-red-500/30 transition text-xs">✕ حذف</button>
-                    </td>
-                `;
-                tableBody.appendChild(row);
+                // السجل
+                document.getElementById('dbTbody').innerHTML += `<tr class="border-b border-slate-800"><td class="p-3 text-white">${s.fullName}</td><td class="p-3">${s.targetRank}</td><td class="p-3">${s.percentage}</td><td class="p-3">${s.decision}</td></tr>`;
             });
         }
 
-        function toggleDetails(index) {
-            let container = document.getElementById('detailsContainer_' + index);
-            let btn = document.getElementById('revealBtn_' + index);
-            if (container.classList.contains('hidden')) {
-                container.classList.remove('hidden');
-                btn.innerText = '🔒 إخفاء البيانات';
-                btn.className = "bg-amber-600/20 hover:bg-amber-600 text-amber-400 hover:text-white font-bold px-4 py-2 rounded-xl border border-amber-500/30 transition text-xs";
-            } else {
-                container.classList.add('hidden');
-                btn.innerText = '🔍 كشف البيانات';
-                btn.className = "bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white font-bold px-4 py-2 rounded-xl border border-blue-500/30 transition text-xs";
-            }
+        function saveEval(i) {
+            let subs = JSON.parse(localStorage.getItem('lspd_submissions'));
+            subs[i].percentage = document.getElementById('score_'+i).value; subs[i].qualified = document.getElementById('qual_'+i).value;
+            localStorage.setItem('lspd_submissions', JSON.stringify(subs)); loadData(); alert('تم الحفظ');
+        }
+        function setDec(i, d) {
+            let subs = JSON.parse(localStorage.getItem('lspd_submissions')); subs[i].decision = d;
+            localStorage.setItem('lspd_submissions', JSON.stringify(subs)); loadData();
+        }
+        function del(i) {
+            if(confirm('متأكد؟')){ let subs = JSON.parse(localStorage.getItem('lspd_submissions')); subs.splice(i,1); localStorage.setItem('lspd_submissions', JSON.stringify(subs)); loadData(); }
         }
 
-        function saveManualEvaluation(index) {
-            let submissions = JSON.parse(localStorage.getItem('lspd_submissions')) || [];
-            if (submissions[index]) {
-                let scoreVal = document.getElementById('manualScore_' + index).value.trim();
-                let qualVal = document.getElementById('manualQual_' + index).value;
-                submissions[index].percentage = scoreVal || '0%';
-                submissions[index].qualified = qualVal;
-                localStorage.setItem('lspd_submissions', JSON.stringify(submissions));
-                loadSubmissionsData();
-                alert("تم حفظ التقييم بنجاح وإرساله لقسم القبول والرفض!");
+        // إدارة الأسئلة (مبسط)
+        function drawQ() {
+            let rank = document.getElementById('qRank').value; let count = document.getElementById('qCount').value;
+            let saved = JSON.parse(localStorage.getItem('questions_'+rank)) || {questions:[], timerMinutes:5};
+            document.getElementById('qTime').value = saved.timerMinutes;
+            let html = '';
+            for(let i=0; i<count; i++) {
+                let q = saved.questions[i] || {text:'', type:'essay', options:['','','','']};
+                html += `<div class="bg-[#141a27] p-3 rounded border border-slate-700">
+                    <input type="text" id="qt_${i}" value="${q.text}" placeholder="نص السؤال" class="w-full bg-[#0c1019] p-2 text-xs text-white rounded mb-2">
+                    <select id="qty_${i}" onchange="document.getElementById('qo_${i}').style.display = this.value==='mcq'?'grid':'none'" class="bg-[#0c1019] p-1 text-xs text-white rounded w-full mb-2"><option value="essay" ${q.type=='essay'?'selected':''}>مقال</option><option value="mcq" ${q.type=='mcq'?'selected':''}>خيارات</option></select>
+                    <div id="qo_${i}" style="display:${q.type=='mcq'?'grid':'none'}" class="grid-cols-2 gap-2"><input id="qo_${i}_0" value="${q.options[0]}" class="bg-[#0c1019] p-1 text-xs text-white rounded"><input id="qo_${i}_1" value="${q.options[1]}" class="bg-[#0c1019] p-1 text-xs text-white rounded"><input id="qo_${i}_2" value="${q.options[2]}" class="bg-[#0c1019] p-1 text-xs text-white rounded"><input id="qo_${i}_3" value="${q.options[3]}" class="bg-[#0c1019] p-1 text-xs text-white rounded"></div>
+                </div>`;
             }
+            document.getElementById('qBox').innerHTML = html;
+        }
+        function loadQ() { drawQ(); }
+        function saveQ() {
+            let rank = document.getElementById('qRank').value; let count = document.getElementById('qCount').value; let time = document.getElementById('qTime').value;
+            let qs = [];
+            for(let i=0; i<count; i++) {
+                let text = document.getElementById('qt_'+i).value; let type = document.getElementById('qty_'+i).value;
+                if(text) qs.push({text:text, type:type, options:[document.getElementById(`qo_${i}_0`)?.value||'',document.getElementById(`qo_${i}_1`)?.value||'',document.getElementById(`qo_${i}_2`)?.value||'',document.getElementById(`qo_${i}_3`)?.value||'']});
+            }
+            localStorage.setItem('questions_'+rank, JSON.stringify({questions:qs, timerMinutes:time})); alert('تم حفظ الأسئلة!');
         }
 
-        function updateDecision(index, decision) {
-            let submissions = JSON.parse(localStorage.getItem('lspd_submissions')) || [];
-            if (submissions[index]) {
-                submissions[index].decision = decision;
-                localStorage.setItem('lspd_submissions', JSON.stringify(submissions));
-                loadSubmissionsData();
-                alert("تم تحديث القرار بنجاح (" + decision + ").");
-            }
-        }
-
-        function deleteRecord(index) {
-            if (confirm("هل أنت متأكد من حذف هذا السجل نهائياً؟")) {
-                let submissions = JSON.parse(localStorage.getItem('lspd_submissions')) || [];
-                submissions.splice(index, 1);
-                localStorage.setItem('lspd_submissions', JSON.stringify(submissions));
-                loadSubmissionsData();
-            }
-        }
-
-        function generateQuestionInputs() {
-            let rank = document.getElementById('questionRankSelect').value;
-            let count = parseInt(document.getElementById('questionCountInput').value) || 3;
-            let container = document.getElementById('questionsContainer');
-            container.innerHTML = '';
-            let savedData = JSON.parse(localStorage.getItem('questions_' + rank)) || {};
-            let savedQuestions = savedData.questions || [];
-
-            if (savedData.timerMinutes) {
-                document.getElementById('timerMinutesInput').value = savedData.timerMinutes;
-            }
-
-            for (let i = 0; i < count; i++) {
-                let q = savedQuestions[i] || { text: '', type: 'essay', options: ['', '', '', ''], correctOption: 0 };
-                let div = document.createElement('div');
-                div.className = "bg-[#141a27] border border-slate-800 p-5 rounded-2xl space-y-3";
-                div.innerHTML = `
-                    <div class="flex justify-between items-center">
-                        <label class="block text-xs font-bold text-amber-400">السؤال رقم ${i + 1}</label>
-                        <select id="q_type_${i}" onchange="toggleQuestionType(${i})" class="bg-[#0c1019] border border-slate-700 rounded-lg px-3 py-1 text-xs text-slate-200">
-                            <option value="essay" ${q.type === 'essay' ? 'selected' : ''}>مقالي</option>
-                            <option value="mcq" ${q.type === 'mcq' ? 'selected' : ''}>ضع دائرة (خيارات)</option>
-                        </select>
-                    </div>
-                    <input type="text" id="q_text_${i}" value="${q.text || ''}" placeholder="اكتب نص السؤال..." class="w-full bg-[#0c1019] border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200">
-                    <div id="q_options_container_${i}" class="${q.type === 'mcq' ? '' : 'hidden'} space-y-2 pt-2">
-                        <label class="block text-[11px] font-bold text-slate-400">الخيارات الأربعة:</label>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                            <input type="text" id="q_opt_${i}_0" value="${q.options[0] || ''}" placeholder="الخيار الأول" class="bg-[#0c1019] border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200">
-                            <input type="text" id="q_opt_${i}_1" value="${q.options[1] || ''}" placeholder="الخيار الثاني" class="bg-[#0c1019] border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200">
-                            <input type="text" id="q_opt_${i}_2" value="${q.options[2] || ''}" placeholder="الخيار الثالث" class="bg-[#0c1019] border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200">
-                            <input type="text" id="q_opt_${i}_3" value="${q.options[3] || ''}" placeholder="الخيار الرابع" class="bg-[#0c1019] border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200">
-                        </div>
-                        <label class="block text-[11px] font-bold text-emerald-400 mt-2">حدد الإجابة الصحيحة:</label>
-                        <select id="q_correct_${i}" class="w-full bg-[#0c1019] border border-emerald-500/50 rounded-xl px-3 py-2 text-xs text-emerald-200">
-                            <option value="0" ${q.correctOption == 0 ? 'selected' : ''}>الخيار الأول</option>
-                            <option value="1" ${q.correctOption == 1 ? 'selected' : ''}>الخيار الثاني</option>
-                            <option value="2" ${q.correctOption == 2 ? 'selected' : ''}>الخيار الثالث</option>
-                            <option value="3" ${q.correctOption == 3 ? 'selected' : ''}>الخيار الرابع</option>
-                        </select>
-                    </div>
-                `;
-                container.appendChild(div);
-            }
-        }
-
-        function toggleQuestionType(index) {
-            let typeSelect = document.getElementById('q_type_' + index).value;
-            let optContainer = document.getElementById('q_options_container_' + index);
-            if (typeSelect === 'mcq') {
-                optContainer.classList.remove('hidden');
-            } else {
-                optContainer.classList.add('hidden');
-            }
-        }
-
-        function loadRankQuestions() { generateQuestionInputs(); }
-
-        function saveRankQuestions() {
-            let rank = document.getElementById('questionRankSelect').value;
-            let count = parseInt(document.getElementById('questionCountInput').value) || 3;
-            let timerMinutes = parseInt(document.getElementById('timerMinutesInput').value) || 5;
-            let questions = [];
-
-            for (let i = 0; i < count; i++) {
-                let text = document.getElementById('q_text_' + i).value.trim();
-                let type = document.getElementById('q_type_' + i).value;
-                let options = [];
-                let correctOption = 0;
-                if (type === 'mcq') {
-                    for (let j = 0; j < 4; j++) {
-                        options.push(document.getElementById(`q_opt_${i}_${j}`).value.trim());
-                    }
-                    correctOption = document.getElementById('q_correct_' + i).value;
-                }
-                if (text) {
-                    questions.push({ text: text, type: type, options: options, correctOption: correctOption });
-                }
-            }
-
-            if (questions.length === 0) { 
-                alert("أدخل سؤالاً واحداً على الأقل!"); 
-                return; 
-            }
-
-            localStorage.setItem('questions_' + rank, JSON.stringify({ 
-                count: questions.length, 
-                timerMinutes: timerMinutes, 
-                questions: questions 
-            }));
-            alert("تم حفظ الأسئلة ووقت الاختبار لرتبة (" + rank + ") مع الإجابات الصحيحة بنجاح!");
-        }
-
-        window.onload = checkAccess;
+        window.onload = checkAcc;
     </script>
 </body>
 </html>
