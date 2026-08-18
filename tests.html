@@ -23,7 +23,7 @@
 
     <main class="flex-grow flex flex-col items-center justify-center p-6 w-full max-w-4xl mx-auto">
         
-        <!-- تنبيه إذا كان لديه طلب قيد الانتظار أو مقبول -->
+        <!-- تنبيه إذا كان لديه طلب قيد الانتظار -->
         <div id="blockedView" class="hidden bg-[#0c1019] border-2 border-amber-500/30 p-8 rounded-3xl shadow-2xl w-full text-center space-y-4">
             <div class="text-amber-400 text-4xl">⏳</div>
             <h1 class="text-xl font-black text-white">لديك طلب اختبار سابق قيد المراجعة أو تم قبوله</h1>
@@ -31,7 +31,7 @@
             <a href="index.html" class="inline-block bg-slate-800 hover:bg-slate-700 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition">العودة للصفحة الرئيسية</a>
         </div>
 
-        <!-- الخطوة 1 -->
+        <!-- الخطوة 1: البيانات الشخصية -->
         <div id="step1" class="bg-[#0c1019] border-2 border-slate-800 p-8 rounded-3xl shadow-2xl w-full space-y-6">
             <div class="text-center">
                 <h1 class="text-2xl font-black text-amber-400">بوابة اختبارات الرتب العسكرية</h1>
@@ -73,11 +73,11 @@
             </button>
         </div>
 
-        <!-- الخطوة 2 -->
+        <!-- الخطوة 2: الأسئلة الكتابية -->
         <div id="step2" class="hidden bg-[#0c1019] border-2 border-slate-800 p-8 rounded-3xl shadow-2xl w-full space-y-6">
             <div class="flex justify-between items-center border-b border-slate-800 pb-4">
                 <div>
-                    <h1 class="text-xl font-black text-amber-400">أسئلة الاختبار</h1>
+                    <h1 class="text-xl font-black text-amber-400">أسئلة الاختبار النظري</h1>
                     <span id="examRankBadge" class="inline-block mt-1 bg-amber-400/10 text-amber-400 text-xs px-3 py-1 rounded-lg border border-amber-400/20 font-bold"></span>
                 </div>
                 <!-- عداد الوقت -->
@@ -89,16 +89,62 @@
             
             <div id="dynamicQuestionsContainer" class="space-y-6"></div>
             
-            <button onclick="submitExam()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-xl transition text-sm shadow-lg">
-                إرسال الاختبار للمشرفين 💾
+            <button onclick="submitTheoryExam()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-3.5 rounded-xl transition text-sm shadow-lg">
+                التالي - الانتقال للاختبار العملي 📝
             </button>
         </div>
 
-        <!-- الخطوة 3 -->
-        <div id="step3" class="hidden bg-[#0c1019] border-2 border-slate-800 p-8 rounded-3xl shadow-2xl w-full text-center space-y-6">
+        <!-- الخطوة 3: الاختبار العملي (MDT Report) -->
+        <div id="step3" class="hidden bg-[#0c1019] border-2 border-slate-800 p-8 rounded-3xl shadow-2xl w-full space-y-6">
+            <div class="border-b border-slate-800 pb-4 text-center">
+                <div class="text-blue-500 text-4xl mb-2">💻</div>
+                <h1 class="text-xl font-black text-blue-400">الاختبار العملي (محاكاة التقرير الأمني)</h1>
+                <p class="text-slate-400 text-xs mt-2">قم بإنشاء تقرير قضية كما تفعل في نظام MDT الخاص بالشرطة بناءً على السيناريو الذي واجهته.</p>
+            </div>
+            
+            <div class="space-y-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 mb-1.5">عنوان القضية:</label>
+                        <input type="text" id="mdtTitle" placeholder="مثال: سرقة متجر، مقاومة اعتقال..." class="w-full bg-[#141a27] border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 mb-1.5">لون العلامة / نوع القضية:</label>
+                        <select id="mdtTag" class="w-full bg-[#141a27] border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
+                            <option value="جنائية">جنائية (أحمر)</option>
+                            <option value="مرورية">مرورية (أصفر)</option>
+                            <option value="جنحة">جنحة (رمادي)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1.5">تفاصيل القضية (التقرير):</label>
+                    <textarea id="mdtDetails" rows="6" placeholder="اكتب تفاصيل الحادثة، أقوال الشهود، والأدلة المضبوطة..." class="w-full bg-[#141a27] border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 mb-1.5">المدة (بالشهور / فترة السجن):</label>
+                        <input type="number" id="mdtDuration" placeholder="0" class="w-full bg-[#141a27] border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 mb-1.5">الغرامة المالية ($):</label>
+                        <input type="number" id="mdtFine" placeholder="0" class="w-full bg-[#141a27] border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
+                    </div>
+                </div>
+            </div>
+            
+            <button onclick="submitFinalExam()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-xl transition text-sm shadow-lg">
+                إرسال الاختبار النهائي للإدارة 💾
+            </button>
+        </div>
+
+        <!-- الخطوة 4: النهاية -->
+        <div id="step4" class="hidden bg-[#0c1019] border-2 border-slate-800 p-8 rounded-3xl shadow-2xl w-full text-center space-y-6">
             <div class="text-4xl">🎉</div>
             <h1 class="text-2xl font-black text-white">تم إرسال اختبارك بنجاح!</h1>
-            <p class="text-slate-400 text-sm">أنت الآن في قائمة الانتظار، بانتظار تصحيح المسؤول ومنحك النتيجة والقرار (قبول، رفض، أو فرصة ثانية).</p>
+            <p class="text-slate-400 text-sm">أنت الآن في قائمة الانتظار، بانتظار تصحيح المسؤول للإجابات النظرية والتقرير العملي.</p>
             <a href="index.html" class="inline-block bg-slate-800 hover:bg-slate-700 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition">العودة للرئيسية</a>
         </div>
 
@@ -107,7 +153,7 @@
     <footer class="bg-[#0a0e16] border-t border-slate-800 py-4 text-center text-xs text-slate-500">جميع الحقوق محفوظة © أكاديمية شرطة لوس سانتوس 2026</footer>
 
     <script>
-        let currentExamData = { fullName: '', callSign: '', discordUser: '', targetRank: '', questionsList: [] };
+        let currentExamData = { fullName: '', callSign: '', discordUser: '', targetRank: '', questionsList: [], theoryAnswersHTML: '' };
         let timerInterval = null;
 
         function checkUserStatus() {
@@ -152,16 +198,10 @@
             currentExamData.questionsList.forEach((q, index) => {
                 let div = document.createElement('div');
                 div.className = "bg-[#141a27] border border-slate-800 p-5 rounded-2xl space-y-3";
-                
                 let qText = q.text || q.question || '';
                 let qHtml = `<label class="block text-sm font-bold text-white">السؤال ${index + 1}: ${qText}</label>`;
                 
-                let isMultiple = (
-                    q.type === 'mcq' || 
-                    q.type === 'ضع دائرة' || 
-                    q.type === 'multiple' || 
-                    (q.options && q.options.length > 0)
-                );
+                let isMultiple = (q.type === 'mcq' || q.type === 'ضع دائرة' || q.type === 'multiple' || (q.options && q.options.length > 0));
 
                 if (isMultiple && q.options && q.options.length > 0) {
                     qHtml += `<div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 mt-2">`;
@@ -191,39 +231,32 @@
         function startTimer(duration) {
             let timer = duration, minutes, seconds;
             let display = document.getElementById('timerDisplay');
-            
             if (timerInterval) clearInterval(timerInterval);
 
             timerInterval = setInterval(function () {
                 minutes = parseInt(timer / 60, 10);
                 seconds = parseInt(timer % 60, 10);
-
                 minutes = minutes < 10 ? "0" + minutes : minutes;
                 seconds = seconds < 10 ? "0" + seconds : seconds;
-
                 display.textContent = minutes + ":" + seconds;
 
                 if (--timer < 0) {
                     clearInterval(timerInterval);
-                    alert("انتهى الوقت المحدد للاختبار! سيتم إرسال إجاباتك تلقائياً.");
-                    submitExam();
+                    alert("انتهى الوقت المحدد للأسئلة النظرية! سيتم نقلك للاختبار العملي.");
+                    submitTheoryExam();
                 }
             }, 1000);
         }
 
-        function submitExam() {
+        // حفظ الأسئلة النظرية والانتقال للعملي
+        function submitTheoryExam() {
             if (timerInterval) clearInterval(timerInterval);
 
             let answersDetailsHTML = '';
             currentExamData.questionsList.forEach((q, index) => {
                 let userAns = '';
                 let qText = q.text || q.question || '';
-                let isMultiple = (
-                    q.type === 'mcq' || 
-                    q.type === 'ضع دائرة' || 
-                    q.type === 'multiple' || 
-                    (q.options && q.options.length > 0)
-                );
+                let isMultiple = (q.type === 'mcq' || q.type === 'ضع دائرة' || q.type === 'multiple' || (q.options && q.options.length > 0));
 
                 if (isMultiple && q.options && q.options.length > 0) {
                     let selectedOpt = document.querySelector(`input[name="answer_${index}"]:checked`);
@@ -234,15 +267,45 @@
                     if (!userAns) userAns = 'لم يجيب';
                 }
                 
-                // حفظ الإجابة الصحيحة المعرفة من الأدمن ضمن تفاصيل الإجابات لكي تظهر للأدمن بوضوح
                 let correctAnsText = q.correctAnswer || 'غير محدد';
-
                 answersDetailsHTML += `<div class="mb-3 pb-3 border-b border-slate-800 last:border-0">
-                    <p class="font-bold text-white">• س ${index+1} (${isMultiple ? 'ضع دائرة' : 'مقالي'}): ${qText}</p>
+                    <p class="font-bold text-white">• س ${index+1}: ${qText}</p>
                     <p class="text-slate-400 text-xs mr-4 mt-1">إجابة المتقدم: <span class="text-amber-400 font-semibold">${userAns}</span></p>
                     <p class="text-emerald-400 text-xs mr-4 mt-1">✓ الإجابة الصحيحة المعتمدة: <span class="font-semibold">${correctAnsText}</span></p>
                 </div>`;
             });
+
+            currentExamData.theoryAnswersHTML = answersDetailsHTML;
+
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step3').classList.remove('hidden');
+        }
+
+        // إرسال الاختبار بالكامل (نظري + تقرير عملي)
+        function submitFinalExam() {
+            let title = document.getElementById('mdtTitle').value.trim() || 'غير محدد';
+            let tag = document.getElementById('mdtTag').value;
+            let details = document.getElementById('mdtDetails').value.trim() || 'لا توجد تفاصيل';
+            let duration = document.getElementById('mdtDuration').value.trim() || '0';
+            let fine = document.getElementById('mdtFine').value.trim() || '0';
+
+            // تصميم شكل التقرير اللي بيظهر للإدارة
+            let mdtReportHTML = `
+                <div class="bg-[#0c1019] p-4 rounded-xl border border-slate-700 mt-2 text-slate-300 text-xs space-y-3">
+                    <div class="flex justify-between border-b border-slate-800 pb-2">
+                        <span><span class="text-blue-400 font-bold">العنوان:</span> ${title}</span>
+                        <span><span class="text-blue-400 font-bold">النوع:</span> ${tag}</span>
+                    </div>
+                    <div>
+                        <span class="text-blue-400 font-bold block mb-1">تفاصيل القضية:</span>
+                        <p class="bg-[#141a27] p-3 rounded-lg border border-slate-800 leading-relaxed">${details}</p>
+                    </div>
+                    <div class="flex justify-between pt-2">
+                        <span><span class="text-red-400 font-bold">السجن:</span> ${duration} شهر</span>
+                        <span><span class="text-emerald-400 font-bold">الغرامة:</span> $${fine}</span>
+                    </div>
+                </div>
+            `;
 
             let submissionRecord = {
                 fullName: currentExamData.fullName,
@@ -252,15 +315,16 @@
                 percentage: 'قيد التقييم',
                 qualified: 'قيد التقييم',
                 decision: 'قيد المراجعة',
-                answersDetails: answersDetailsHTML
+                answersDetails: currentExamData.theoryAnswersHTML,
+                mdtReport: mdtReportHTML // حفظ التقرير العملي هنا
             };
 
             let submissions = JSON.parse(localStorage.getItem('lspd_submissions')) || [];
             submissions.push(submissionRecord);
             localStorage.setItem('lspd_submissions', JSON.stringify(submissions));
 
-            document.getElementById('step2').classList.add('hidden');
-            document.getElementById('step3').classList.remove('hidden');
+            document.getElementById('step3').classList.add('hidden');
+            document.getElementById('step4').classList.remove('hidden');
         }
 
         window.onload = checkUserStatus;
