@@ -95,51 +95,57 @@
         </div>
 
         <!-- الخطوة 3: الاختبار العملي (MDT Report) -->
-        <div id="step3" class="hidden bg-[#0c1019] border-2 border-slate-800 p-8 rounded-3xl shadow-2xl w-full space-y-6">
-            <div class="border-b border-slate-800 pb-4 text-center">
-                <div class="text-blue-500 text-4xl mb-2">💻</div>
-                <h1 class="text-xl font-black text-blue-400">الاختبار العملي (محاكاة التقرير الأمني)</h1>
-                <p class="text-slate-400 text-xs mt-2">قم بإنشاء تقرير قضية كما تفعل في نظام MDT الخاص بالشرطة بناءً على السيناريو الذي واجهته.</p>
-            </div>
-            
-            <div class="space-y-5">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 mb-1.5">عنوان القضية:</label>
-                        <input type="text" id="mdtTitle" placeholder="مثال: سرقة متجر، مقاومة اعتقال..." class="w-full bg-[#141a27] border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 mb-1.5">لون العلامة / نوع القضية:</label>
-                        <select id="mdtTag" class="w-full bg-[#141a27] border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
-                            <option value="جنائية">جنائية (أحمر)</option>
-                            <option value="مرورية">مرورية (أصفر)</option>
-                            <option value="جنحة">جنحة (رمادي)</option>
-                        </select>
-                    </div>
-                </div>
+       <!-- قسم الاختبار العملي بتصميم الـ MDT -->
+<div id="practical-exam-section" class="mdt-system" style="display: none;">
+    <div class="mdt-header">
+        <h2>الاختبار العملي (محاكاة التقرير الأمني)</h2>
+        <p>قم بكتابة التقرير الأمني بناءً على السيناريو المطلوب منك.</p>
+    </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 mb-1.5">تفاصيل القضية (التقرير):</label>
-                    <textarea id="mdtDetails" rows="6" placeholder="اكتب تفاصيل الحادثة، أقوال الشهود، والأدلة المضبوطة..." class="w-full bg-[#141a27] border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500"></textarea>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 mb-1.5">المدة (بالشهور / فترة السجن):</label>
-                        <input type="number" id="mdtDuration" placeholder="0" class="w-full bg-[#141a27] border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 mb-1.5">الغرامة المالية ($):</label>
-                        <input type="number" id="mdtFine" placeholder="0" class="w-full bg-[#141a27] border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
-                    </div>
-                </div>
-            </div>
-            
-            <button onclick="submitFinalExam()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-xl transition text-sm shadow-lg">
-                إرسال الاختبار النهائي للإدارة 💾
-            </button>
+    <div class="mdt-container">
+        <!-- الأزرار الجانبية -->
+        <div class="mdt-sidebar">
+            <button type="button" class="mdt-btn" onclick="openModal('tagsModal')">🏷️ الوسوم</button>
+            <button type="button" class="mdt-btn" onclick="openModal('violationsModal')">⚖️ تحديد المخالفات</button>
+            <button type="button" class="mdt-btn" onclick="openModal('officersModal')">👮 العساكر المشاركين</button>
+            <button type="button" class="mdt-btn" onclick="openModal('evidenceModal')">📁 الأدلة</button>
         </div>
 
+        <!-- منطقة تفاصيل القضية -->
+        <div class="mdt-main-content">
+            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                <div class="mdt-form-group" style="flex: 1;">
+                    <label>عنوان القضية / التهمة</label>
+                    <input type="text" id="mdtCaseTitle" class="mdt-input" placeholder="مثال: سرقة متجر وسط المدينة...">
+                </div>
+                <div class="mdt-form-group" style="flex: 1;">
+                    <label>نوع التهمة</label>
+                    <select id="mdtCaseType" class="mdt-input">
+                        <option value="جنائية (أحمر)">جنائية (أحمر)</option>
+                        <option value="مرورية">مرورية</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="mdt-form-group">
+                <label>تفاصيل القضية</label>
+                <textarea id="mdtCaseDetails" class="mdt-input" rows="8" placeholder="اكتب تفاصيل الحادثة، أقوال الشهود، والأدلة المضبوطة..."></textarea>
+            </div>
+
+            <button type="button" id="submitMdtExam" class="mdt-submit-btn">إرسال التقرير الأمني للإدارة 📥</button>
+        </div>
+    </div>
+</div>
+
+<!-- النوافذ المنبثقة (Modals) للزينة حالياً لإكمال الشكل -->
+<div id="violationsModal" class="mdt-modal">
+    <div class="mdt-modal-content">
+        <span class="mdt-close-btn" onclick="closeModal('violationsModal')">&times;</span>
+        <h3>تحديد المخالفات</h3>
+        <p>سيتم تفعيل هذه الخاصية قريباً...</p>
+    </div>
+</div>
+<!-- يمكنك تكرار الـ Modal لباقي الأزرار بنفس الطريقة -->
         <!-- الخطوة 4: النهاية -->
         <div id="step4" class="hidden bg-[#0c1019] border-2 border-slate-800 p-8 rounded-3xl shadow-2xl w-full text-center space-y-6">
             <div class="text-4xl">🎉</div>
