@@ -6,7 +6,115 @@
     <title>الاكاديمية الشرطية - اختبار الرتب العسكرية</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Cairo', sans-serif; }</style>
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+
+        /* تنسيقات نظام MDT */
+        .mdt-system {
+            background-color: #1a1b26;
+            color: #a9b1d6;
+            padding: 20px;
+            border-radius: 12px;
+            width: 100%;
+        }
+        .mdt-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .mdt-container {
+            display: flex;
+            gap: 20px;
+        }
+        .mdt-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 250px;
+        }
+        .mdt-btn {
+            background-color: #24283b;
+            color: #ffffff;
+            border: 1px solid #414868;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: right;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+        .mdt-btn:hover {
+            background-color: #3d59a1;
+            border-color: #7aa2f7;
+        }
+        .mdt-main-content {
+            flex-grow: 1;
+            background-color: #1f2335;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #292e42;
+        }
+        .mdt-form-group {
+            margin-bottom: 15px;
+        }
+        .mdt-form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #7aa2f7;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .mdt-input {
+            width: 100%;
+            padding: 10px;
+            background-color: #1a1b26;
+            border: 1px solid #414868;
+            color: white;
+            border-radius: 5px;
+            box-sizing: border-box;
+            outline: none;
+        }
+        .mdt-input:focus {
+            border-color: #7aa2f7;
+        }
+        .mdt-submit-btn {
+            background-color: #27ae60;
+            color: white;
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: 0.3s;
+        }
+        .mdt-submit-btn:hover {
+            background-color: #2ecc71;
+        }
+        .mdt-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+        .mdt-modal-content {
+            background-color: #1f2335;
+            padding: 20px;
+            border-radius: 10px;
+            width: 50%;
+            border: 1px solid #7aa2f7;
+        }
+        .mdt-close-btn {
+            float: left;
+            color: #f7768e;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body class="bg-[#080B12] text-slate-200 font-sans antialiased min-h-screen flex flex-col justify-between">
 
@@ -80,7 +188,6 @@
                     <h1 class="text-xl font-black text-amber-400">أسئلة الاختبار النظري</h1>
                     <span id="examRankBadge" class="inline-block mt-1 bg-amber-400/10 text-amber-400 text-xs px-3 py-1 rounded-lg border border-amber-400/20 font-bold"></span>
                 </div>
-                <!-- عداد الوقت -->
                 <div class="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-2 rounded-xl text-sm font-black flex items-center gap-2">
                     <span>⏱️ الوقت المتبقي:</span>
                     <span id="timerDisplay">00:00</span>
@@ -95,57 +202,78 @@
         </div>
 
         <!-- الخطوة 3: الاختبار العملي (MDT Report) -->
-       <!-- قسم الاختبار العملي بتصميم الـ MDT -->
-<div id="practical-exam-section" class="mdt-system" style="display: none;">
-    <div class="mdt-header">
-        <h2>الاختبار العملي (محاكاة التقرير الأمني)</h2>
-        <p>قم بكتابة التقرير الأمني بناءً على السيناريو المطلوب منك.</p>
-    </div>
-
-    <div class="mdt-container">
-        <!-- الأزرار الجانبية -->
-        <div class="mdt-sidebar">
-            <button type="button" class="mdt-btn" onclick="openModal('tagsModal')">🏷️ الوسوم</button>
-            <button type="button" class="mdt-btn" onclick="openModal('violationsModal')">⚖️ تحديد المخالفات</button>
-            <button type="button" class="mdt-btn" onclick="openModal('officersModal')">👮 العساكر المشاركين</button>
-            <button type="button" class="mdt-btn" onclick="openModal('evidenceModal')">📁 الأدلة</button>
-        </div>
-
-        <!-- منطقة تفاصيل القضية -->
-        <div class="mdt-main-content">
-            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-                <div class="mdt-form-group" style="flex: 1;">
-                    <label>عنوان القضية / التهمة</label>
-                    <input type="text" id="mdtCaseTitle" class="mdt-input" placeholder="مثال: سرقة متجر وسط المدينة...">
-                </div>
-                <div class="mdt-form-group" style="flex: 1;">
-                    <label>نوع التهمة</label>
-                    <select id="mdtCaseType" class="mdt-input">
-                        <option value="جنائية (أحمر)">جنائية (أحمر)</option>
-                        <option value="مرورية">مرورية</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="mdt-form-group">
-                <label>تفاصيل القضية</label>
-                <textarea id="mdtCaseDetails" class="mdt-input" rows="8" placeholder="اكتب تفاصيل الحادثة، أقوال الشهود، والأدلة المضبوطة..."></textarea>
+        <div id="step3" class="hidden mdt-system">
+            <div class="mdt-header">
+                <h2 style="font-size: 24px; font-weight: 900; color: #7aa2f7;">الاختبار العملي (محاكاة التقرير الأمني)</h2>
+                <p style="font-size: 14px;">قم بكتابة التقرير الأمني بناءً على السيناريو المطلوب منك.</p>
             </div>
 
-            <button type="button" id="submitMdtExam" class="mdt-submit-btn">إرسال التقرير الأمني للإدارة 📥</button>
-        </div>
-    </div>
-</div>
+            <div class="mdt-container">
+                <!-- الأزرار الجانبية -->
+                <div class="mdt-sidebar">
+                    <button type="button" class="mdt-btn" onclick="openModal('tagsModal')">🏷️ الوسوم</button>
+                    <button type="button" class="mdt-btn" onclick="openModal('violationsModal')">⚖️ تحديد المخالفات</button>
+                    <button type="button" class="mdt-btn" onclick="openModal('officersModal')">👮 العساكر المشاركين</button>
+                    <button type="button" class="mdt-btn" onclick="openModal('evidenceModal')">📁 الأدلة</button>
+                </div>
 
-<!-- النوافذ المنبثقة (Modals) للزينة حالياً لإكمال الشكل -->
-<div id="violationsModal" class="mdt-modal">
-    <div class="mdt-modal-content">
-        <span class="mdt-close-btn" onclick="closeModal('violationsModal')">&times;</span>
-        <h3>تحديد المخالفات</h3>
-        <p>سيتم تفعيل هذه الخاصية قريباً...</p>
-    </div>
-</div>
-<!-- يمكنك تكرار الـ Modal لباقي الأزرار بنفس الطريقة -->
+                <!-- منطقة تفاصيل القضية -->
+                <div class="mdt-main-content">
+                    <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                        <div class="mdt-form-group" style="flex: 1;">
+                            <label>عنوان القضية / التهمة</label>
+                            <input type="text" id="mdtCaseTitle" class="mdt-input" placeholder="مثال: سرقة متجر وسط المدينة...">
+                        </div>
+                        <div class="mdt-form-group" style="flex: 1;">
+                            <label>نوع التهمة</label>
+                            <select id="mdtCaseType" class="mdt-input">
+                                <option value="جنائية (أحمر)">جنائية (أحمر)</option>
+                                <option value="مرورية">مرورية</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mdt-form-group">
+                        <label>تفاصيل القضية</label>
+                        <textarea id="mdtCaseDetails" class="mdt-input" rows="8" placeholder="اكتب تفاصيل الحادثة، أقوال الشهود، والأدلة المضبوطة..."></textarea>
+                    </div>
+
+                    <!-- تم ربط الزر بدالة الإرسال -->
+                    <button type="button" onclick="submitFinalExam()" class="mdt-submit-btn">إرسال التقرير الأمني للإدارة 📥</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- النوافذ المنبثقة (Modals) -->
+        <div id="tagsModal" class="mdt-modal">
+            <div class="mdt-modal-content">
+                <span class="mdt-close-btn" onclick="closeModal('tagsModal')">&times;</span>
+                <h3>الوسوم</h3>
+                <p>سيتم تفعيل هذه الخاصية قريباً...</p>
+            </div>
+        </div>
+        <div id="violationsModal" class="mdt-modal">
+            <div class="mdt-modal-content">
+                <span class="mdt-close-btn" onclick="closeModal('violationsModal')">&times;</span>
+                <h3>تحديد المخالفات</h3>
+                <p>سيتم تفعيل هذه الخاصية قريباً...</p>
+            </div>
+        </div>
+        <div id="officersModal" class="mdt-modal">
+            <div class="mdt-modal-content">
+                <span class="mdt-close-btn" onclick="closeModal('officersModal')">&times;</span>
+                <h3>العساكر المشاركين</h3>
+                <p>سيتم تفعيل هذه الخاصية قريباً...</p>
+            </div>
+        </div>
+        <div id="evidenceModal" class="mdt-modal">
+            <div class="mdt-modal-content">
+                <span class="mdt-close-btn" onclick="closeModal('evidenceModal')">&times;</span>
+                <h3>الأدلة</h3>
+                <p>سيتم تفعيل هذه الخاصية قريباً...</p>
+            </div>
+        </div>
+
         <!-- الخطوة 4: النهاية -->
         <div id="step4" class="hidden bg-[#0c1019] border-2 border-slate-800 p-8 rounded-3xl shadow-2xl w-full text-center space-y-6">
             <div class="text-4xl">🎉</div>
@@ -164,7 +292,7 @@
 
     <script>
         // إعدادات Firebase الخاصة بك
-       const firebaseConfig = {
+        const firebaseConfig = {
             apiKey: "AIzaSyBaoWelTtGQjUBTSDjOIc35DrYap-lyH6c",
             authDomain: "leadership-professional.firebaseapp.com",
             databaseURL: "https://leadership-professional-default-rtdb.firebaseio.com",
@@ -306,17 +434,18 @@
 
             currentExamData.theoryAnswersHTML = answersDetailsHTML;
 
+            // إخفاء النظري وإظهار العملي (MDT)
             document.getElementById('step2').classList.add('hidden');
             document.getElementById('step3').classList.remove('hidden');
         }
 
         function submitFinalExam() {
-            let title = document.getElementById('mdtTitle').value.trim() || 'غير محدد';
-            let tag = document.getElementById('mdtTag').value;
-            let details = document.getElementById('mdtDetails').value.trim() || 'لا توجد تفاصيل';
-            let duration = document.getElementById('mdtDuration').value.trim() || '0';
-            let fine = document.getElementById('mdtFine').value.trim() || '0';
+            // سحب البيانات من حقول الـ MDT الجديدة
+            let title = document.getElementById('mdtCaseTitle').value.trim() || 'غير محدد';
+            let tag = document.getElementById('mdtCaseType').value;
+            let details = document.getElementById('mdtCaseDetails').value.trim() || 'لا توجد تفاصيل';
 
+            // بناء التقرير لعرضه في لوحة الإدارة لاحقاً
             let mdtReportHTML = `
                 <div class="bg-[#0c1019] p-4 rounded-xl border border-slate-700 mt-2 text-slate-300 text-xs space-y-3">
                     <div class="flex justify-between border-b border-slate-800 pb-2">
@@ -326,10 +455,6 @@
                     <div>
                         <span class="text-blue-400 font-bold block mb-1">تفاصيل القضية:</span>
                         <p class="bg-[#141a27] p-3 rounded-lg border border-slate-800 leading-relaxed">${details}</p>
-                    </div>
-                    <div class="flex justify-between pt-2">
-                        <span><span class="text-red-400 font-bold">السجن:</span> ${duration} شهر</span>
-                        <span><span class="text-emerald-400 font-bold">الغرامة:</span> $${fine}</span>
                     </div>
                 </div>
             `;
@@ -346,7 +471,7 @@
                 mdtReport: mdtReportHTML
             };
 
-            // حفظ الاختبار في الداتا بيز
+            // حفظ الاختبار في قاعدة البيانات
             db.ref('lspd_submissions').once('value').then(snapshot => {
                 let submissions = snapshot.val() || [];
                 submissions.push(submissionRecord);
@@ -355,6 +480,21 @@
                     document.getElementById('step4').classList.remove('hidden');
                 });
             });
+        }
+
+        // دوال التحكم بالنوافذ المنبثقة (Modals) للوحة الـ MDT
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target.className.includes('mdt-modal')) {
+                event.target.style.display = "none";
+            }
         }
 
         window.onload = checkUserStatus;
