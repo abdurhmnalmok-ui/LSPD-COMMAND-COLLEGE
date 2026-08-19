@@ -9,7 +9,6 @@
     <style>
         body { font-family: 'Cairo', sans-serif; }
         
-        /* تنسيقات شريط التمرير (Scrollbar) ليناسب الـ MDT */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -23,6 +22,8 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #475569; 
         }
+        
+        .tag-card.active { border-color: #3B82F6 !important; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5); transform: scale(0.98); }
     </style>
 </head>
 <body class="bg-[#080B12] text-slate-200 font-sans antialiased min-h-screen flex flex-col justify-between">
@@ -40,7 +41,6 @@
 
     <main class="flex-grow flex flex-col items-center justify-center p-6 w-full max-w-6xl mx-auto">
         
-        <!-- تنبيه إذا كان لديه طلب قيد الانتظار -->
         <div id="blockedView" class="hidden bg-[#0c1019] border-2 border-amber-500/30 p-8 rounded-3xl shadow-2xl w-full max-w-4xl text-center space-y-4">
             <div class="text-amber-400 text-4xl">⏳</div>
             <h1 class="text-xl font-black text-white">لديك طلب اختبار سابق قيد المراجعة أو تم قبوله</h1>
@@ -110,10 +110,9 @@
             </button>
         </div>
 
-        <!-- الخطوة 3: الاختبار العملي (MDT Report التصميم الجديد) -->
+        <!-- الخطوة 3: الاختبار العملي (MDT Report) -->
         <div id="step3" class="hidden w-full h-[85vh] bg-[#111827] rounded-xl overflow-hidden border border-slate-800 shadow-2xl flex flex-col font-sans">
             
-            <!-- MDT Header -->
             <div class="bg-[#1e293b] border-b border-slate-700 h-16 flex items-center justify-between px-6">
                 <div class="flex items-center gap-4 w-1/3">
                     <div class="bg-[#334155] rounded-lg p-2 text-white font-bold text-sm">قضية جديدة</div>
@@ -126,7 +125,7 @@
                 </div>
                 <div class="flex items-center justify-end gap-3 w-1/3">
                     <div class="text-right">
-                        <div class="text-sm font-bold text-white">LSPD Officer</div>
+                        <div class="text-sm font-bold text-white" id="mdtOfficerNameDisplay">LSPD Officer</div>
                         <div class="text-xs text-green-400">متصل (الاختبار العملي)</div>
                     </div>
                     <div class="h-10 w-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold border-2 border-slate-600">
@@ -135,206 +134,78 @@
                 </div>
             </div>
 
-            <!-- MDT Body -->
             <div class="flex flex-1 overflow-hidden">
                 
-                <!-- الأزرار الجانبية (Left Panel) -->
+                <!-- الأزرار الجانبية -->
                 <div class="w-64 bg-[#1e293b] border-l border-slate-700 p-4 flex flex-col gap-3 overflow-y-auto">
                     <h3 class="text-slate-400 font-black text-sm text-center mb-2">الأزرار</h3>
                     
-                    <button onclick="openModal('tagsModal')" class="bg-[#0f172a] border border-slate-600 hover:border-blue-500 hover:bg-[#1e293b] text-white p-3 rounded-lg flex justify-between items-center transition">
-                        <span class="text-slate-400">&lt;</span> <span class="font-bold text-sm">الوسوم</span>
-                    </button>
                     <button onclick="openModal('violationsModal')" class="bg-[#0f172a] border border-slate-600 hover:border-blue-500 hover:bg-[#1e293b] text-white p-3 rounded-lg flex justify-between items-center transition">
                         <span class="text-slate-400">&lt;</span> <span class="font-bold text-sm">تحديد المخالفات</span>
                     </button>
-                    <button onclick="openModal('officersModal')" class="bg-[#0f172a] border border-slate-600 hover:border-blue-500 hover:bg-[#1e293b] text-white p-3 rounded-lg flex justify-between items-center transition">
-                        <span class="text-slate-400">&lt;</span> <span class="font-bold text-sm">العساكر المشاركين</span>
-                    </button>
-                    <button class="bg-[#0f172a] border border-slate-600 hover:border-blue-500 hover:bg-[#1e293b] text-white p-3 rounded-lg flex justify-between items-center transition opacity-50 cursor-not-allowed">
+                    <button onclick="openModal('textModal', 'offender')" class="bg-[#0f172a] border border-slate-600 hover:border-blue-500 hover:bg-[#1e293b] text-white p-3 rounded-lg flex justify-between items-center transition">
                         <span class="text-slate-400">&lt;</span> <span class="font-bold text-sm">تحديد المجرمين</span>
                     </button>
-                    <button onclick="openModal('evidenceModal')" class="bg-[#0f172a] border border-slate-600 hover:border-blue-500 hover:bg-[#1e293b] text-white p-3 rounded-lg flex justify-between items-center transition mt-4">
-                        <span class="text-slate-400">&lt;</span> <span class="font-bold text-sm">الأدلة</span>
+                    <button onclick="openModal('textModal', 'officers')" class="bg-[#0f172a] border border-slate-600 hover:border-blue-500 hover:bg-[#1e293b] text-white p-3 rounded-lg flex justify-between items-center transition">
+                        <span class="text-slate-400">&lt;</span> <span class="font-bold text-sm">العساكر المشاركين</span>
                     </button>
+                    
+                    <div class="mt-auto pt-6 space-y-2">
+                        <div class="bg-[#0f172a] border border-slate-700 p-3 rounded-lg">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-[11px] text-slate-400">إجمالي السجن:</span>
+                                <span id="mdtTotalMonths" class="text-red-400 font-black text-sm">0 شهر</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-[11px] text-slate-400">إجمالي الغرامات:</span>
+                                <span id="mdtTotalFines" class="text-emerald-400 font-black text-sm">$0</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- منطقة تفاصيل القضية (Center Panel) -->
+                <!-- منطقة التقرير -->
                 <div class="flex-1 p-6 flex flex-col gap-4 overflow-y-auto bg-[#0f172a]">
                     <h2 class="text-white font-black text-lg border-b border-slate-700 pb-2">تفاصيل القضية</h2>
                     
                     <div class="flex gap-4">
                         <div class="flex-1 space-y-1">
-                            <label class="text-slate-400 text-xs font-bold">نوع التهمة</label>
+                            <label class="text-slate-400 text-xs font-bold">نوع القضية <span class="text-red-500">*</span></label>
                             <select id="mdtCaseType" class="w-full bg-[#1e293b] border border-slate-600 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
-                                <option value="جنائية (أحمر)">جنائية</option>
+                                <option value="جنائية">جنائية</option>
                                 <option value="مرورية">مرورية</option>
                             </select>
                         </div>
                         <div class="flex-1 space-y-1">
-                            <label class="text-slate-400 text-xs font-bold">عنوان القضية</label>
-                            <input type="text" id="mdtCaseTitle" class="w-full bg-[#1e293b] border border-slate-600 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-blue-500" placeholder="العنوان...">
+                            <label class="text-slate-400 text-xs font-bold">عنوان القضية <span class="text-red-500">*</span></label>
+                            <input type="text" id="mdtCaseTitle" class="w-full bg-[#1e293b] border border-slate-600 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-blue-500" placeholder="اكتب العنوان...">
                         </div>
                     </div>
 
                     <div class="flex-1 flex flex-col min-h-[300px] border border-slate-600 rounded-lg overflow-hidden bg-[#1e293b]">
-                        <!-- Toolbar (Visual only) -->
                         <div class="bg-[#334155] p-2 flex gap-2 border-b border-slate-600">
                             <button class="px-2 py-1 text-slate-300 hover:bg-[#475569] rounded"><strong>B</strong></button>
                             <button class="px-2 py-1 text-slate-300 hover:bg-[#475569] rounded italic">I</button>
                             <button class="px-2 py-1 text-slate-300 hover:bg-[#475569] rounded underline">U</button>
-                            <div class="w-px h-6 bg-slate-600 mx-1"></div>
-                            <button class="px-2 py-1 text-slate-300 hover:bg-[#475569] rounded">📜</button>
-                            <button class="px-2 py-1 text-slate-300 hover:bg-[#475569] rounded">📷</button>
                         </div>
-                        <textarea id="mdtCaseDetails" class="w-full flex-1 bg-transparent p-4 text-sm text-slate-200 resize-none outline-none leading-relaxed" placeholder="اكتب تفاصيل الحادثة، أقوال الشهود، والأدلة المضبوطة بناءً على سيناريو الاختبار..."></textarea>
+                        <textarea id="mdtCaseDetails" class="w-full flex-1 bg-transparent p-4 text-sm text-slate-200 resize-none outline-none leading-relaxed" placeholder="اكتب تفاصيل الحادثة، أقوال الشهود..."></textarea>
                     </div>
 
-                    <!-- Footer Actions -->
+                    <div class="flex items-center gap-8 bg-[#1e293b] p-3 rounded-lg border border-slate-700 w-fit mt-2">
+                        <label class="flex items-center gap-2 text-xs font-bold cursor-pointer">
+                            <input type="checkbox" id="mdtBargain" class="w-4 h-4 accent-blue-600 bg-[#0f172a] border-slate-600"> المساومة
+                        </label>
+                        <label class="flex items-center gap-2 text-xs font-bold cursor-pointer">
+                            <input type="checkbox" id="mdtClosed" class="w-4 h-4 accent-blue-600 bg-[#0f172a] border-slate-600" checked> القضية مغلقة
+                        </label>
+                    </div>
+
                     <div class="bg-[#1e293b] border border-slate-600 rounded-lg p-4 flex justify-between items-center mt-2">
-                        <div class="flex items-center gap-3">
-                            <span class="text-slate-300 text-sm font-bold">المحكومية</span>
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" class="w-4 h-4 accent-blue-500">
-                                <span class="text-xs text-slate-400">العقوبة منفذة</span>
-                            </label>
-                        </div>
+                        <span class="text-slate-400 text-xs">يرجى التأكد من اختيار المخالفات وكتابة التقرير بشكل كامل.</span>
                         <button onclick="submitFinalExam()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-8 rounded-lg transition shadow-lg text-sm">
                             حفظ وإرسال التقرير 📥
                         </button>
                     </div>
-                </div>
-
-                <!-- القائمة اليمنى (Right Sidebar - Visual) -->
-                <div class="w-72 bg-[#1e293b] border-r border-slate-700 flex flex-col">
-                    <div class="p-4 border-b border-slate-700 flex justify-between items-center">
-                        <span class="text-slate-300 text-xs font-bold bg-[#334155] px-2 py-1 rounded">MDT V2</span>
-                        <span class="text-blue-400 font-black">القضايا</span>
-                    </div>
-                    <div class="flex-1 overflow-y-auto p-3 space-y-2">
-                        <!-- Dummy Data to match visual style -->
-                        <div class="bg-[#0f172a] p-3 rounded-lg border border-slate-700 flex justify-between items-start hover:border-blue-500 cursor-pointer transition">
-                            <div>
-                                <div class="text-white text-sm font-bold">سرقة بنك باسيفيك</div>
-                                <div class="text-slate-500 text-xs mt-1">رقم القضية: 59382</div>
-                            </div>
-                            <span class="bg-blue-500/20 text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded">MDT</span>
-                        </div>
-                        <div class="bg-[#0f172a] p-3 rounded-lg border border-slate-700 flex justify-between items-start hover:border-blue-500 cursor-pointer transition">
-                            <div>
-                                <div class="text-white text-sm font-bold">قتل عمد واعتداء</div>
-                                <div class="text-slate-500 text-xs mt-1">رقم القضية: 59381</div>
-                            </div>
-                            <span class="bg-blue-500/20 text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded">MDT</span>
-                        </div>
-                        <div class="bg-[#0f172a] p-3 rounded-lg border border-slate-700 flex justify-between items-start hover:border-blue-500 cursor-pointer transition">
-                            <div>
-                                <div class="text-white text-sm font-bold">تهرب مروري</div>
-                                <div class="text-slate-500 text-xs mt-1">رقم القضية: 59380</div>
-                            </div>
-                            <span class="bg-blue-500/20 text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded">MDT</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- النوافذ المنبثقة الجديدة (Modals with Tailwind) -->
-        
-        <!-- الوسوم -->
-        <div id="tagsModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex justify-center items-center">
-            <div class="bg-[#1e293b] border border-slate-600 rounded-xl w-full max-w-md p-6 shadow-2xl">
-                <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-3">
-                    <h3 class="text-white font-bold">🏷️ إضافة الوسوم</h3>
-                    <button onclick="closeModal('tagsModal')" class="text-slate-400 hover:text-red-400 font-bold text-xl">&times;</button>
-                </div>
-                <p class="text-slate-400 text-sm">أداة الوسوم غير مطلوبة في التقييم الحالي.</p>
-                <div class="mt-6 flex justify-end">
-                    <button onclick="closeModal('tagsModal')" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded text-sm">إغلاق</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- المخالفات (تطابق الصور) -->
-        <div id="violationsModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex justify-center items-center">
-            <div class="bg-[#0f172a] border border-slate-600 rounded-xl w-full max-w-4xl h-[70vh] flex flex-col shadow-2xl overflow-hidden">
-                <div class="bg-[#1e293b] p-4 flex justify-between items-center border-b border-slate-700">
-                    <h3 class="text-white font-bold text-lg">⚖️ تحديد المخالفات</h3>
-                    <button onclick="closeModal('violationsModal')" class="text-slate-400 hover:text-red-400 font-bold text-2xl">&times;</button>
-                </div>
-                <div class="p-4 overflow-y-auto grid grid-cols-2 md:grid-cols-4 gap-3 content-start flex-1">
-                    <!-- Cards representing violations based on MDT images -->
-                    <div class="bg-green-600/20 border border-green-600 rounded-lg p-3 text-center cursor-pointer hover:bg-green-600/30 transition">
-                        <div class="text-white font-bold text-sm">عدم حمل رخصة قيادة</div>
-                        <div class="text-green-400 text-xs mt-2">$1000 - 0 شهر</div>
-                    </div>
-                    <div class="bg-green-600/20 border border-green-600 rounded-lg p-3 text-center cursor-pointer hover:bg-green-600/30 transition">
-                        <div class="text-white font-bold text-sm">القيادة بتهور</div>
-                        <div class="text-green-400 text-xs mt-2">$2000 - 0 شهر</div>
-                    </div>
-                    <div class="bg-orange-500/20 border border-orange-500 rounded-lg p-3 text-center cursor-pointer hover:bg-orange-500/30 transition">
-                        <div class="text-white font-bold text-sm">سرقة متجر</div>
-                        <div class="text-orange-400 text-xs mt-2">$5000 - 15 شهر</div>
-                    </div>
-                    <div class="bg-red-600/20 border border-red-600 rounded-lg p-3 text-center cursor-pointer hover:bg-red-600/30 transition">
-                        <div class="text-white font-bold text-sm">سرقة البنك المركزي</div>
-                        <div class="text-red-400 text-xs mt-2">$50000 - 60 شهر</div>
-                    </div>
-                    <div class="bg-red-600/20 border border-red-600 rounded-lg p-3 text-center cursor-pointer hover:bg-red-600/30 transition">
-                        <div class="text-white font-bold text-sm">قتل عمد</div>
-                        <div class="text-red-400 text-xs mt-2">$20000 - 45 شهر</div>
-                    </div>
-                    <!-- إمكانية إضافة المزيد برمجياً -->
-                </div>
-                <div class="bg-[#1e293b] p-4 border-t border-slate-700 flex justify-between items-center">
-                    <div class="text-slate-300 text-sm">لأغراض الاختبار العملي، لا حاجة لتحديدها فعلياً.</div>
-                    <button onclick="closeModal('violationsModal')" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold text-sm">تأكيد</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- العساكر المشاركين -->
-        <div id="officersModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex justify-center items-center">
-            <div class="bg-[#1e293b] border border-slate-600 rounded-xl w-full max-w-2xl p-6 shadow-2xl">
-                <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-3">
-                    <h3 class="text-white font-bold">👮 العساكر المشاركين في القضية</h3>
-                    <button onclick="closeModal('officersModal')" class="text-slate-400 hover:text-red-400 font-bold text-xl">&times;</button>
-                </div>
-                <div class="grid grid-cols-3 gap-2 mt-4">
-                    <div class="bg-[#0f172a] border border-slate-600 p-2 text-center rounded text-sm text-slate-300 cursor-pointer hover:border-blue-500">Michael DeSanta</div>
-                    <div class="bg-[#0f172a] border border-slate-600 p-2 text-center rounded text-sm text-slate-300 cursor-pointer hover:border-blue-500">David Alexander</div>
-                    <div class="bg-[#0f172a] border border-slate-600 p-2 text-center rounded text-sm text-slate-300 cursor-pointer hover:border-blue-500">Frank Mart</div>
-                </div>
-                <div class="mt-6 flex justify-end">
-                    <button onclick="closeModal('officersModal')" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded text-sm font-bold">تأكيد التحديد</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- الأدلة -->
-        <div id="evidenceModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex justify-center items-center">
-            <div class="bg-[#1e293b] border border-slate-600 rounded-xl w-full max-w-md p-6 shadow-2xl">
-                <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-3">
-                    <h3 class="text-white font-bold">📁 رفع دليل</h3>
-                    <button onclick="closeModal('evidenceModal')" class="text-slate-400 hover:text-red-400 font-bold text-xl">&times;</button>
-                </div>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">عنوان الدليل</label>
-                        <input type="text" class="w-full bg-[#0f172a] border border-slate-600 rounded p-2 text-sm text-white" placeholder="مثال: صورة السلاح">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">وصف الدليل</label>
-                        <input type="text" class="w-full bg-[#0f172a] border border-slate-600 rounded p-2 text-sm text-white" placeholder="الرقم التسلسلي أو نوع الدليل">
-                    </div>
-                    <div class="border-2 border-dashed border-slate-600 rounded-lg p-6 text-center bg-[#0f172a]">
-                        <p class="text-slate-400 text-xs mb-2">قم برفع الصورة أو الرابط هنا</p>
-                        <input type="file" class="text-xs text-slate-300 w-full ml-4">
-                    </div>
-                </div>
-                <div class="mt-6 flex justify-end gap-2">
-                    <button onclick="closeModal('evidenceModal')" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded text-sm">إلغاء</button>
-                    <button onclick="closeModal('evidenceModal')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-bold">رفع</button>
                 </div>
             </div>
         </div>
@@ -349,14 +220,44 @@
 
     </main>
 
+    <!-- النوافذ المنبثقة -->
+    <div id="modalOverlay" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex justify-center items-center">
+        
+        <!-- المخالفات الديناميكية -->
+        <div id="violationsModal" class="hidden bg-[#0f172a] border border-slate-600 rounded-xl w-full max-w-4xl h-[70vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="bg-[#1e293b] p-4 flex justify-between items-center border-b border-slate-700">
+                <h3 class="text-white font-bold text-lg">⚖️ تحديد المخالفات</h3>
+                <button onclick="closeModals()" class="text-slate-400 hover:text-red-400 font-bold text-2xl">&times;</button>
+            </div>
+            <div class="p-4 overflow-y-auto grid grid-cols-2 md:grid-cols-4 gap-3 content-start flex-1" id="tagsGrid">
+                <!-- يتم التوليد عبر جافاسكربت -->
+            </div>
+            <div class="bg-[#1e293b] p-4 border-t border-slate-700 text-center">
+                <button onclick="closeModals()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2 rounded-lg font-bold text-sm">تأكيد واغلاق</button>
+            </div>
+        </div>
+
+        <!-- إدخال نصوص (مجرمين - عساكر) -->
+        <div id="textModal" class="hidden bg-[#1e293b] border border-slate-600 rounded-xl w-full max-w-md p-6 shadow-2xl">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-3">
+                <h3 class="text-white font-bold" id="modalTextTitle">إضافة</h3>
+                <button onclick="closeModals()" class="text-slate-400 hover:text-red-400 font-bold text-xl">&times;</button>
+            </div>
+            <div class="space-y-4">
+                <p class="text-xs text-slate-400">الرجاء كتابة الأسماء مفصولة بفاصلة (مثال: أحمد، خالد)</p>
+                <input type="text" id="modalTextInput" class="w-full bg-[#0f172a] border border-slate-600 rounded-lg p-3 text-sm text-white outline-none focus:border-blue-500">
+                <button onclick="saveTextModal()" class="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded-lg text-white text-sm font-bold transition">حفظ</button>
+            </div>
+        </div>
+
+    </div>
+
     <footer class="bg-[#0a0e16] border-t border-slate-800 py-4 text-center text-xs text-slate-500">جميع الحقوق محفوظة © أكاديمية شرطة لوس سانتوس 2026</footer>
 
-    <!-- مكتبات Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-        // إعدادات Firebase الخاصة بك
         const firebaseConfig = {
             apiKey: "AIzaSyBaoWelTtGQjUBTSDjOIc35DrYap-lyH6c",
             authDomain: "leadership-professional.firebaseapp.com",
@@ -372,6 +273,25 @@
 
         let currentExamData = { fullName: '', callSign: '', discordUser: '', targetRank: '', questionsList: [], theoryAnswersHTML: '' };
         let timerInterval = null;
+        
+        let mdtData = { offender: 'لم يحدد', officers: 'لم يحدد', totalMonths: 0, totalFine: 0, tagsHTML: '' };
+        let activeModalType = '';
+
+        const policeCharges = [
+            { id: 1, name: "عدم حمل رخصة قيادة", type: "green", fine: 1000, months: 0 },
+            { id: 2, name: "القيادة بتهور", type: "green", fine: 3000, months: 0 },
+            { id: 3, name: "عكس السير", type: "green", fine: 2500, months: 0 },
+            { id: 4, name: "القيادة تحت تأثير المسكرات", type: "green", fine: 5000, months: 5 },
+            { id: 5, name: "عدم الامتثال للاستيقاف", type: "orange", fine: 4000, months: 5 },
+            { id: 6, name: "الهروب من الشرطة", type: "orange", fine: 6000, months: 10 },
+            { id: 7, name: "حيازة سلاح غير مرخص", type: "orange", fine: 8000, months: 10 },
+            { id: 8, name: "مقاومة اعتقال", type: "orange", fine: 5000, months: 10 },
+            { id: 9, name: "سرقة متجر", type: "red", fine: 15000, months: 20 },
+            { id: 10, name: "سرقة بنك", type: "red", fine: 50000, months: 50 },
+            { id: 11, name: "خطف", type: "red", fine: 25000, months: 30 },
+            { id: 12, name: "شروع في قتل عسكري", type: "red", fine: 40000, months: 60 }
+        ];
+        let selectedCharges = new Set();
 
         function checkUserStatus() {
             db.ref('lspd_submissions').once('value').then(snapshot => {
@@ -390,23 +310,16 @@
             let discordUser = document.getElementById('discordUser').value.trim();
             let targetRank = document.getElementById('targetRank').value;
 
-            if (!fullName || !callSign || !discordUser) {
-                alert("الرجاء تعبئة اسمك ورقم اليونت وديسكورد!");
-                return;
-            }
+            if (!fullName || !callSign || !discordUser) return alert("الرجاء تعبئة جميع البيانات!");
 
             db.ref('questions_' + targetRank).once('value').then(snapshot => {
                 let savedData = snapshot.val();
                 if (!savedData || !savedData.questions || savedData.questions.length === 0) {
-                    alert("عذراً، لم يقم المسؤول بإضافة أسئلة لهذه الرتبة (" + targetRank + ") في لوحة التحكم بعد.");
-                    return;
+                    return alert("عذراً، لم يقم المسؤول بإضافة أسئلة لهذه الرتبة بعد.");
                 }
 
-                currentExamData.fullName = fullName;
-                currentExamData.callSign = callSign;
-                currentExamData.discordUser = discordUser;
-                currentExamData.targetRank = targetRank;
-                currentExamData.questionsList = savedData.questions;
+                currentExamData = { fullName, callSign, discordUser, targetRank, questionsList: savedData.questions };
+                document.getElementById('mdtOfficerNameDisplay').innerText = callSign + ' | ' + fullName;
 
                 document.getElementById('step1').classList.add('hidden');
                 document.getElementById('step2').classList.remove('hidden');
@@ -418,125 +331,190 @@
                 currentExamData.questionsList.forEach((q, index) => {
                     let div = document.createElement('div');
                     div.className = "bg-[#141a27] border border-slate-800 p-5 rounded-2xl space-y-3";
-                    let qText = q.text || q.question || '';
-                    let qHtml = `<label class="block text-sm font-bold text-white">السؤال ${index + 1}: ${qText}</label>`;
+                    let qHtml = `<label class="block text-sm font-bold text-white">السؤال ${index + 1}: ${q.text || q.question}</label>`;
                     
                     let isMultiple = (q.type === 'mcq' || q.type === 'ضع دائرة' || q.type === 'multiple' || (q.options && q.options.length > 0));
 
                     if (isMultiple && q.options && q.options.length > 0) {
                         qHtml += `<div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 mt-2">`;
                         q.options.forEach((opt) => {
-                            if (opt && opt.trim() !== '') {
+                            if (opt) {
                                 qHtml += `
                                     <label class="flex items-center gap-3 bg-[#0c1019] border border-slate-700/80 p-3 rounded-xl cursor-pointer hover:border-amber-400/50 transition">
                                         <input type="radio" name="answer_${index}" value="${opt}" class="accent-amber-400">
                                         <span class="text-xs text-slate-200 font-semibold">${opt}</span>
-                                    </label>
-                                `;
+                                    </label>`;
                             }
                         });
                         qHtml += `</div>`;
                     } else {
                         qHtml += `<input type="text" id="answer_${index}" placeholder="اكتب إجابتك هنا..." class="w-full bg-[#0c1019] border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-400">`;
                     }
-
                     div.innerHTML = qHtml;
                     container.appendChild(div);
                 });
 
-                let durationMinutes = parseInt(savedData.timerMinutes) || 5;
-                startTimer(durationMinutes * 60);
+                startTimer((parseInt(savedData.timerMinutes) || 5) * 60);
             });
         }
 
         function startTimer(duration) {
-            let timer = duration, minutes, seconds;
+            let timer = duration, m, s;
             let display = document.getElementById('timerDisplay');
-            if (timerInterval) clearInterval(timerInterval);
-
-            timerInterval = setInterval(function () {
-                minutes = parseInt(timer / 60, 10);
-                seconds = parseInt(timer % 60, 10);
-                minutes = minutes < 10 ? "0" + minutes : minutes;
-                seconds = seconds < 10 ? "0" + seconds : seconds;
-                display.textContent = minutes + ":" + seconds;
-
-                if (--timer < 0) {
-                    clearInterval(timerInterval);
-                    alert("انتهى الوقت المحدد للأسئلة النظرية! سيتم نقلك للاختبار العملي.");
-                    submitTheoryExam();
-                }
+            timerInterval = setInterval(() => {
+                m = parseInt(timer / 60, 10); s = parseInt(timer % 60, 10);
+                display.textContent = (m < 10 ? "0"+m : m) + ":" + (s < 10 ? "0"+s : s);
+                if (--timer < 0) { clearInterval(timerInterval); submitTheoryExam(); }
             }, 1000);
         }
 
         function submitTheoryExam() {
             if (timerInterval) clearInterval(timerInterval);
-
-            let answersDetailsHTML = '';
+            let html = '';
             currentExamData.questionsList.forEach((q, index) => {
                 let userAns = '';
-                let qText = q.text || q.question || '';
                 let isMultiple = (q.type === 'mcq' || q.type === 'ضع دائرة' || q.type === 'multiple' || (q.options && q.options.length > 0));
 
-                if (isMultiple && q.options && q.options.length > 0) {
-                    let selectedOpt = document.querySelector(`input[name="answer_${index}"]:checked`);
-                    userAns = selectedOpt ? selectedOpt.value : 'لم يتم اختيار إجابة';
+                if (isMultiple) {
+                    let sel = document.querySelector(`input[name="answer_${index}"]:checked`);
+                    userAns = sel ? sel.value : 'لم يتم اختيار إجابة';
                 } else {
-                    let ansInput = document.getElementById('answer_' + index);
-                    userAns = ansInput ? ansInput.value.trim() : '';
-                    if (!userAns) userAns = 'لم يجيب';
+                    let inp = document.getElementById('answer_' + index);
+                    userAns = inp ? inp.value.trim() : 'لم يجيب';
                 }
                 
-                let correctAnsText = q.options && q.options[q.correctOption] ? q.options[q.correctOption] : 'غير محدد';
-                if(q.type !== 'mcq') correctAnsText = 'مراجعة يدوية';
-
-                answersDetailsHTML += `<div class="mb-3 pb-3 border-b border-slate-800 last:border-0">
-                    <p class="font-bold text-white">• س ${index+1}: ${qText}</p>
-                    <p class="text-slate-400 text-xs mr-4 mt-1">إجابة المتقدم: <span class="text-amber-400 font-semibold">${userAns}</span></p>
-                    <p class="text-emerald-400 text-xs mr-4 mt-1">✓ الإجابة الصحيحة المعتمدة: <span class="font-semibold">${correctAnsText}</span></p>
+                let correctAnsText = q.options && q.options[q.correctOption] ? q.options[q.correctOption] : 'غير محدد/مراجعة يدوية';
+                
+                html += `<div class="mb-3 pb-3 border-b border-slate-800 last:border-0">
+                    <p class="font-bold text-white">• س ${index+1}: ${q.text || q.question}</p>
+                    <p class="text-slate-400 text-xs mt-1">إجابة المتقدم: <span class="text-amber-400 font-semibold">${userAns || 'فارغ'}</span></p>
+                    <p class="text-emerald-400 text-xs mt-1">✓ الإجابة المعتمدة: <span class="font-semibold">${correctAnsText}</span></p>
                 </div>`;
             });
-
-            currentExamData.theoryAnswersHTML = answersDetailsHTML;
-
-            // إخفاء النظري وإظهار العملي (MDT)
+            currentExamData.theoryAnswersHTML = html;
+            
             document.getElementById('step2').classList.add('hidden');
             document.getElementById('step3').classList.remove('hidden');
+            initTagsGrid();
+        }
+
+        /* --- MDT Dynamic Logic --- */
+        function initTagsGrid() {
+            let grid = document.getElementById('tagsGrid');
+            grid.innerHTML = '';
+            policeCharges.forEach(c => {
+                let colorClass = c.type === 'green' ? 'border-emerald-600 bg-emerald-600/20' : (c.type === 'orange' ? 'border-orange-500 bg-orange-500/20' : 'border-red-600 bg-red-600/20');
+                let textClass = c.type === 'green' ? 'text-emerald-400' : (c.type === 'orange' ? 'text-orange-400' : 'text-red-400');
+                grid.innerHTML += `
+                    <div id="charge_${c.id}" onclick="toggleCharge(${c.id})" class="tag-card border ${colorClass} rounded-lg p-3 text-center cursor-pointer transition flex flex-col justify-center h-24">
+                        <div class="text-white font-bold text-sm leading-tight">${c.name}</div>
+                        <div class="${textClass} text-xs mt-2 font-bold">$${c.fine} - ${c.months} شهر</div>
+                    </div>
+                `;
+            });
+        }
+
+        function toggleCharge(id) {
+            let card = document.getElementById('charge_'+id);
+            if(selectedCharges.has(id)) {
+                selectedCharges.delete(id);
+                card.classList.remove('active');
+            } else {
+                selectedCharges.add(id);
+                card.classList.add('active');
+            }
+            updateMdtTotals();
+        }
+
+        function updateMdtTotals() {
+            mdtData.totalMonths = 0; mdtData.totalFine = 0; mdtData.tagsHTML = '';
+            selectedCharges.forEach(id => {
+                let c = policeCharges.find(x => x.id === id);
+                if(c) {
+                    mdtData.totalMonths += c.months;
+                    mdtData.totalFine += c.fine;
+                    let color = c.type === 'green' ? 'text-emerald-400' : (c.type === 'orange' ? 'text-orange-400' : 'text-red-400');
+                    mdtData.tagsHTML += `<span class="${color} text-[10px] block">• ${c.name} (${c.months} شهر | $${c.fine})</span>`;
+                }
+            });
+            document.getElementById('mdtTotalMonths').innerText = mdtData.totalMonths + " شهر";
+            document.getElementById('mdtTotalFines').innerText = "$" + mdtData.totalFine;
+        }
+
+        function openModal(modalId, type = '') {
+            document.getElementById('modalOverlay').classList.remove('hidden');
+            document.getElementById('modalOverlay').classList.add('flex');
+            
+            document.getElementById('violationsModal').classList.add('hidden');
+            document.getElementById('textModal').classList.add('hidden');
+            
+            if (modalId === 'violationsModal') {
+                document.getElementById('violationsModal').classList.remove('hidden');
+                document.getElementById('violationsModal').classList.add('flex');
+            } else if (modalId === 'textModal') {
+                activeModalType = type;
+                document.getElementById('textModal').classList.remove('hidden');
+                document.getElementById('modalTextTitle').innerText = type === 'offender' ? 'تحديد المجرمين' : 'العساكر المشاركين';
+                document.getElementById('modalTextInput').value = type === 'offender' ? (mdtData.offender !== 'لم يحدد' ? mdtData.offender : '') : (mdtData.officers !== 'لم يحدد' ? mdtData.officers : '');
+                document.getElementById('modalTextInput').focus();
+            }
+        }
+
+        function closeModals() {
+            document.getElementById('modalOverlay').classList.remove('flex');
+            document.getElementById('modalOverlay').classList.add('hidden');
+        }
+
+        function saveTextModal() {
+            let val = document.getElementById('modalTextInput').value.trim() || 'لم يحدد';
+            if (activeModalType === 'offender') mdtData.offender = val;
+            if (activeModalType === 'officers') mdtData.officers = val;
+            closeModals();
         }
 
         function submitFinalExam() {
-            // سحب البيانات من حقول الـ MDT الجديدة
-            let title = document.getElementById('mdtCaseTitle').value.trim() || 'غير محدد';
-            let tag = document.getElementById('mdtCaseType').value;
-            let details = document.getElementById('mdtCaseDetails').value.trim() || 'لا توجد تفاصيل';
+            let title = document.getElementById('mdtCaseTitle').value.trim();
+            let details = document.getElementById('mdtCaseDetails').value.trim();
+            
+            if(!title || !details) return alert("يجب كتابة عنوان القضية والتفاصيل!");
 
-            // بناء التقرير لعرضه في لوحة الإدارة لاحقاً
+            let isBargain = document.getElementById('mdtBargain').checked ? 'نعم' : 'لا';
+            let isClosed = document.getElementById('mdtClosed').checked ? 'نعم' : 'لا';
+            let type = document.getElementById('mdtCaseType').value;
+
             let mdtReportHTML = `
-                <div class="bg-[#0c1019] p-4 rounded-xl border border-slate-700 mt-2 text-slate-300 text-xs space-y-3">
-                    <div class="flex justify-between border-b border-slate-800 pb-2">
-                        <span><span class="text-blue-400 font-bold">العنوان:</span> ${title}</span>
-                        <span><span class="text-blue-400 font-bold">النوع:</span> ${tag}</span>
+                <div class="bg-[#0f172a] p-4 rounded-xl border border-slate-700 text-slate-300 text-xs">
+                    <div class="flex justify-between border-b border-slate-700 pb-2 mb-3">
+                        <span class="font-bold text-white"><span class="text-blue-400">العنوان:</span> ${title} <span class="bg-blue-600/20 text-blue-400 px-2 py-0.5 rounded text-[10px] mr-2">${type}</span></span>
                     </div>
-                    <div>
-                        <span class="text-blue-400 font-bold block mb-1">تفاصيل القضية:</span>
-                        <p class="bg-[#141a27] p-3 rounded-lg border border-slate-800 leading-relaxed">${details}</p>
+                    <div class="grid grid-cols-2 gap-2 mb-3 bg-[#1e293b] p-2 rounded">
+                        <div><span class="text-slate-400">المخالف:</span> ${mdtData.offender}</div>
+                        <div><span class="text-slate-400">العساكر:</span> ${mdtData.officers}</div>
+                        <div><span class="text-slate-400">المساومة:</span> ${isBargain}</div>
+                        <div><span class="text-slate-400">مغلقة:</span> ${isClosed}</div>
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-blue-400 font-bold block mb-1">الوسوم والتهم:</span>
+                        <div class="bg-[#1e293b] p-2 rounded max-h-24 overflow-y-auto">${mdtData.tagsHTML || '<span class="text-slate-500">لم يتم تحديد تهم</span>'}</div>
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-blue-400 font-bold block mb-1">التفاصيل:</span>
+                        <p class="bg-[#1e293b] p-3 rounded border border-slate-700 whitespace-pre-wrap">${details}</p>
+                    </div>
+                    <div class="flex justify-between pt-2 border-t border-slate-700 font-black">
+                        <span class="text-red-400">إجمالي السجن: ${mdtData.totalMonths} شهر</span>
+                        <span class="text-emerald-400">إجمالي الغرامة: $${mdtData.totalFine}</span>
                     </div>
                 </div>
             `;
 
             let submissionRecord = {
-                fullName: currentExamData.fullName,
-                callSign: currentExamData.callSign,
-                discordUser: currentExamData.discordUser,
-                targetRank: currentExamData.targetRank,
-                percentage: 'قيد التقييم',
-                qualified: 'قيد التقييم',
-                decision: 'قيد المراجعة',
-                answersDetails: currentExamData.theoryAnswersHTML,
-                mdtReport: mdtReportHTML
+                fullName: currentExamData.fullName, callSign: currentExamData.callSign,
+                discordUser: currentExamData.discordUser, targetRank: currentExamData.targetRank,
+                percentage: 'قيد التقييم', qualified: 'قيد التقييم', decision: 'قيد المراجعة',
+                answersDetails: currentExamData.theoryAnswersHTML, mdtReport: mdtReportHTML
             };
 
-            // حفظ الاختبار في قاعدة البيانات
             db.ref('lspd_submissions').once('value').then(snapshot => {
                 let submissions = snapshot.val() || [];
                 submissions.push(submissionRecord);
@@ -545,30 +523,6 @@
                     document.getElementById('step4').classList.remove('hidden');
                 });
             });
-        }
-
-        // دوال التحكم بالنوافذ المنبثقة (Modals) للوحة الـ MDT
-        function openModal(modalId) {
-            let modal = document.getElementById(modalId);
-            if(modal) {
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-            }
-        }
-
-        function closeModal(modalId) {
-            let modal = document.getElementById(modalId);
-            if(modal) {
-                modal.classList.remove('flex');
-                modal.classList.add('hidden');
-            }
-        }
-
-        window.onclick = function(event) {
-            if (event.target.classList.contains('fixed') && event.target.classList.contains('bg-black/80')) {
-                event.target.classList.remove('flex');
-                event.target.classList.add('hidden');
-            }
         }
 
         window.onload = checkUserStatus;
