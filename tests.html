@@ -16,7 +16,6 @@
         
         .tag-card.active { border-color: #3B82F6 !important; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5); transform: scale(0.98); }
         
-        /* تأثيرات واجهة الاختبار المتقدمة */
         .secure-portal-bg { background-color: #0b1120; }
         .question-box-bg { background-color: #0f172a; }
     </style>
@@ -82,14 +81,33 @@
             </div>
 
             <button onclick="startExam()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-3.5 rounded-xl transition text-sm shadow-lg">
-                توثيق البيانات وبدء الاختبار 🛡️
+                متابعة 🛡️
             </button>
         </div>
 
-        <!-- الخطوة 2: الأسئلة الكتابية (نظام عرض سؤال بسؤال) -->
+        <!-- الخطوة 1.5: الإقرار والتعهد -->
+        <div id="pledgeView" class="hidden bg-[#0c1019] border border-slate-800 p-8 rounded-2xl shadow-2xl w-full max-w-3xl space-y-6">
+            <div class="text-center border-b border-slate-800 pb-4">
+                <h1 class="text-2xl font-black text-red-500">إقرار وتعهد بالسرية</h1>
+                <p class="text-slate-400 text-xs mt-1">يجب كتابة التعهد أدناه يدوياً للموافقة على الشروط والبدء</p>
+            </div>
+
+            <div class="bg-red-500/10 border border-red-500/30 p-5 rounded-xl text-center">
+                <p class="text-red-400 text-[15px] font-bold leading-loose select-none" id="pledgeSourceText">أقر أنا المختبر أدناه بتعهدي التام بالمحافظة على سرية الاختبار، وعدم تصوير أو نسخ أو تسريب أي من أسئلته أو إجاباته بأي وسيلة كانت. وفي حال المخالفة، أتحمل كامل المسؤولية القانونية التي يترتب عليها إلغاء نتيجتي وحرماني من الاختبار.</p>
+            </div>
+
+            <div>
+                <textarea id="pledgeInput" rows="4" placeholder="اكتب التعهد هنا حرفياً كما هو موضح بالأعلى..." class="w-full bg-[#141a27] border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-red-500 resize-none"></textarea>
+                <p id="pledgeError" class="text-red-500 text-xs mt-2 hidden font-bold">⚠️ النص غير مطابق، يرجى كتابة التعهد بشكل صحيح تماماً.</p>
+            </div>
+
+            <button onclick="confirmPledge()" class="w-full bg-red-600 hover:bg-red-700 text-white font-black py-3.5 rounded-xl transition text-sm shadow-lg">
+                تأكيد التعهد وبدء الاختبار ⏱️
+            </button>
+        </div>
+
+        <!-- الخطوة 2: الأسئلة الكتابية -->
         <div id="step2" class="hidden secure-portal-bg border border-slate-800 p-8 rounded-xl shadow-2xl w-full max-w-4xl flex-col" dir="ltr">
-            
-            <!-- الهيدر -->
             <div class="flex justify-between items-start mb-10 border-b border-slate-800/50 pb-6">
                 <div class="flex items-center gap-3">
                     <div class="bg-blue-600/20 p-2 rounded-lg text-blue-500">🛡️</div>
@@ -98,12 +116,8 @@
                         <p class="text-slate-500 text-[10px] font-bold tracking-widest uppercase mt-0.5">Command College Secure Portal</p>
                     </div>
                 </div>
-                <div class="text-slate-500 hover:text-white cursor-pointer transition">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                </div>
             </div>
 
-            <!-- شريط التقدم -->
             <div class="mb-8">
                 <div class="flex justify-between text-[11px] text-slate-400 font-bold mb-2 uppercase tracking-widest">
                     <span>Progress</span>
@@ -114,12 +128,10 @@
                 </div>
             </div>
 
-            <!-- حاوية السؤال -->
             <div class="question-box-bg border border-slate-800/80 rounded-xl p-8 relative">
-                
                 <div class="flex justify-between items-center mb-8">
-                    <div class="border border-slate-700 bg-[#0b1120] text-slate-300 text-xs font-bold px-4 py-1.5 rounded-full flex items-center gap-2">
-                        ⏱ <span id="timerDisplay">00:00</span>
+                    <div class="border border-slate-700 bg-[#0b1120] text-red-400 text-xs font-bold px-4 py-1.5 rounded-full flex items-center gap-2">
+                        ⏱ <span id="timerDisplay">01:00</span>
                     </div>
                     <div class="text-blue-500 text-xs font-bold tracking-widest uppercase" id="questionNumberText">
                         QUESTION 01
@@ -130,12 +142,10 @@
                     <h2 class="text-lg md:text-xl font-bold text-white leading-relaxed" id="questionText">جاري تحميل السؤال...</h2>
                 </div>
 
-                <div id="optionsContainer" class="space-y-3" dir="rtl">
-                    <!-- سيتم حقن الخيارات هنا -->
-                </div>
+                <div id="optionsContainer" class="space-y-3" dir="rtl"></div>
 
                 <div class="mt-8 border-t border-slate-800 pt-6">
-                    <button onclick="nextQuestion()" class="bg-[#1e293b] hover:bg-[#334155] text-white font-bold py-2.5 px-6 rounded border border-slate-700 transition text-sm flex items-center gap-2 tracking-wide">
+                    <button onclick="manualNextQuestion()" class="bg-[#1e293b] hover:bg-[#334155] text-white font-bold py-2.5 px-6 rounded border border-slate-700 transition text-sm flex items-center gap-2 tracking-wide">
                         CONFIRM ✓
                     </button>
                 </div>
@@ -144,7 +154,6 @@
 
         <!-- الخطوة 3: الاختبار العملي (MDT Report) -->
         <div id="step3" class="hidden w-full h-[85vh] bg-[#111827] rounded-xl overflow-hidden border border-slate-800 shadow-2xl flex-col font-sans">
-            <!-- نفس كود الخطوة الثالثة القديم بالكامل -->
             <div class="bg-[#1e293b] border-b border-slate-700 h-16 flex items-center justify-between px-6">
                 <div class="flex items-center gap-4 w-1/3">
                     <div class="bg-[#334155] rounded-lg p-2 text-white font-bold text-sm">قضية جديدة</div>
@@ -235,7 +244,7 @@
 
     </main>
 
-    <!-- النوافذ المنبثقة للـ MDT (كما هي) -->
+    <!-- النوافذ المنبثقة للـ MDT -->
     <div id="modalOverlay" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] justify-center items-center">
         <!-- المخالفات -->
         <div id="violationsModal" class="hidden bg-[#0f172a] border border-slate-600 rounded-xl w-full max-w-4xl h-[70vh] flex-col shadow-2xl overflow-hidden">
@@ -281,10 +290,14 @@
         let currentExamData = { fullName: '', callSign: '', discordUser: '', targetRank: '', questionsList: [], theoryAnswersHTML: '' };
         let userAnswers = [];
         let currentQuestionIndex = 0;
-        let timerInterval = null;
         
+        let timerInterval = null;
+        const SECONDS_PER_QUESTION = 60;
+
         let mdtData = { offender: 'لم يحدد', officers: 'لم يحدد', totalMonths: 0, totalFine: 0, tagsHTML: '' };
         let activeModalType = '';
+
+        const EXPECTED_PLEDGE = "أقر أنا المختبر أدناه بتعهدي التام بالمحافظة على سرية الاختبار، وعدم تصوير أو نسخ أو تسريب أي من أسئلته أو إجاباته بأي وسيلة كانت. وفي حال المخالفة، أتحمل كامل المسؤولية القانونية التي يترتب عليها إلغاء نتيجتي وحرماني من الاختبار.";
 
         const policeCharges = [
             { id: 1, name: "عدم حمل رخصة قيادة", type: "green", fine: 1000, months: 0 },
@@ -298,7 +311,6 @@
         ];
         let selectedCharges = new Set();
 
-        // تم نقل الفحص إلى زر البدء لمنع حظر اللاعبين الآخرين
         function startExam() {
             let fullName = document.getElementById('fullName').value.trim();
             let callSign = document.getElementById('callSign').value.trim();
@@ -307,7 +319,6 @@
 
             if (!fullName || !callSign || !discordUser) return alert("الرجاء تعبئة جميع البيانات!");
 
-            // فحص خاص بحساب الديسكورد المدخل فقط
             db.ref('lspd_submissions').once('value').then(snapshot => {
                 let submissions = snapshot.val() || [];
                 let activeSub = Object.values(submissions).find(s => 
@@ -320,7 +331,7 @@
                     return;
                 }
 
-                // جلب الأسئلة للرتبة
+                // التأكد من وجود أسئلة قبل الانتقال للإقرار
                 db.ref('questions_' + targetRank).once('value').then(qSnapshot => {
                     let savedData = qSnapshot.val();
                     if (!savedData || !savedData.questions || savedData.questions.length === 0) {
@@ -332,18 +343,35 @@
 
                     document.getElementById('mdtOfficerNameDisplay').innerText = callSign + ' | ' + fullName;
 
+                    // الانتقال لصفحة الإقرار
                     document.getElementById('step1').classList.add('hidden');
-                    document.getElementById('step2').classList.remove('hidden');
-                    document.getElementById('step2').classList.add('flex');
-
-                    currentQuestionIndex = 0;
-                    renderQuestion();
-                    startTimer((parseInt(savedData.timerMinutes) || 5) * 60);
+                    document.getElementById('pledgeView').classList.remove('hidden');
                 });
             });
         }
 
-        // عرض سؤال واحد في كل مرة
+        // دالة التحقق من الإقرار وبدء العداد
+        function confirmPledge() {
+            let userInput = document.getElementById('pledgeInput').value;
+            
+            // تنظيف النصوص من المسافات الزائدة للمقارنة العادلة
+            let cleanInput = userInput.replace(/\s+/g, ' ').trim();
+            let cleanExpected = EXPECTED_PLEDGE.replace(/\s+/g, ' ').trim();
+
+            if (cleanInput !== cleanExpected) {
+                document.getElementById('pledgeError').classList.remove('hidden');
+                return;
+            }
+
+            // إخفاء صفحة الإقرار وبدء الاختبار
+            document.getElementById('pledgeView').classList.add('hidden');
+            document.getElementById('step2').classList.remove('hidden');
+            document.getElementById('step2').classList.add('flex');
+
+            currentQuestionIndex = 0;
+            renderQuestion();
+        }
+
         function renderQuestion() {
             let q = currentExamData.questionsList[currentQuestionIndex];
             let total = currentExamData.questionsList.length;
@@ -376,6 +404,8 @@
                 let currentVal = userAnswers[currentQuestionIndex] || '';
                 container.innerHTML = `<textarea id="current_text_ans" rows="4" placeholder="اكتب إجابتك هنا..." class="w-full bg-[#0a0f1c] border border-slate-700 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:border-slate-500 resize-none">${currentVal}</textarea>`;
             }
+
+            startQuestionTimer();
         }
 
         function updateOptionStyles() {
@@ -398,7 +428,51 @@
             updateOptionStyles();
         }
 
-        function nextQuestion() {
+        function startQuestionTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            
+            let timer = SECONDS_PER_QUESTION;
+            let display = document.getElementById('timerDisplay');
+            
+            let m = parseInt(timer / 60, 10);
+            let s = parseInt(timer % 60, 10);
+            display.textContent = (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+
+            timerInterval = setInterval(() => {
+                timer--;
+                m = parseInt(timer / 60, 10);
+                s = parseInt(timer % 60, 10);
+                display.textContent = (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+
+                if (timer <= 10) {
+                    display.parentElement.classList.add('text-red-500');
+                } else {
+                    display.parentElement.classList.remove('text-red-500');
+                }
+
+                if (timer <= 0) {
+                    clearInterval(timerInterval);
+                    autoSkipQuestion();
+                }
+            }, 1000);
+        }
+
+        function autoSkipQuestion() {
+            let q = currentExamData.questionsList[currentQuestionIndex];
+            let isMultiple = (q.type === 'mcq' || q.type === 'ضع دائرة' || q.type === 'multiple' || (q.options && q.options.length > 0));
+
+            if (isMultiple) {
+                let sel = document.querySelector('input[name="current_q"]:checked');
+                userAnswers[currentQuestionIndex] = sel ? sel.value : 'انتهى الوقت ولم يتم الإجابة';
+            } else {
+                let inp = document.getElementById('current_text_ans');
+                let val = inp ? inp.value.trim() : '';
+                userAnswers[currentQuestionIndex] = val ? val : 'انتهى الوقت ولم يتم الإجابة';
+            }
+            moveToNext();
+        }
+
+        function manualNextQuestion() {
             let q = currentExamData.questionsList[currentQuestionIndex];
             let isMultiple = (q.type === 'mcq' || q.type === 'ضع دائرة' || q.type === 'multiple' || (q.options && q.options.length > 0));
 
@@ -412,6 +486,11 @@
                 if (!val) return alert("الرجاء كتابة إجابة قبل المتابعة!");
                 userAnswers[currentQuestionIndex] = val;
             }
+            moveToNext();
+        }
+
+        function moveToNext() {
+            if (timerInterval) clearInterval(timerInterval);
 
             if (currentQuestionIndex < currentExamData.questionsList.length - 1) {
                 currentQuestionIndex++;
@@ -421,26 +500,19 @@
             }
         }
 
-        function startTimer(duration) {
-            let timer = duration, m, s;
-            let display = document.getElementById('timerDisplay');
-            timerInterval = setInterval(() => {
-                m = parseInt(timer / 60, 10); s = parseInt(timer % 60, 10);
-                display.textContent = (m < 10 ? "0"+m : m) + ":" + (s < 10 ? "0"+s : s);
-                if (--timer < 0) { clearInterval(timerInterval); submitTheoryExam(); }
-            }, 1000);
-        }
-
         function submitTheoryExam() {
             if (timerInterval) clearInterval(timerInterval);
             let html = '';
             currentExamData.questionsList.forEach((q, index) => {
-                let userAns = userAnswers[index] || 'لم يجب';
+                let userAns = userAnswers[index] || 'لم يتم الإجابة';
                 let correctAnsText = q.options && q.options[q.correctOption] ? q.options[q.correctOption] : 'مراجعة يدوية';
                 
+                let isTimeOut = userAns === 'انتهى الوقت ولم يتم الإجابة';
+                let ansColor = isTimeOut ? 'text-red-400' : 'text-blue-400';
+
                 html += `<div class="mb-3 pb-3 border-b border-slate-800 last:border-0">
                     <p class="font-bold text-white">• س ${index+1}: ${q.text || q.question}</p>
-                    <p class="text-slate-400 text-xs mt-1">إجابة المتقدم: <span class="text-blue-400 font-semibold">${userAns}</span></p>
+                    <p class="text-slate-400 text-xs mt-1">إجابة المتقدم: <span class="${ansColor} font-semibold">${userAns}</span></p>
                     <p class="text-emerald-400 text-xs mt-1">✓ المعتمدة: <span class="font-semibold">${correctAnsText}</span></p>
                 </div>`;
             });
@@ -453,7 +525,7 @@
             initTagsGrid();
         }
 
-        /* --- MDT Functions (كما هي بدون تغيير) --- */
+        /* --- MDT Functions --- */
         function initTagsGrid() {
             let grid = document.getElementById('tagsGrid');
             grid.innerHTML = '';
