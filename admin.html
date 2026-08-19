@@ -1,137 +1,211 @@
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, set, get, child, remove, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة القيادة - LSPD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Cairo', sans-serif; }</style>
+</head>
+<body class="bg-[#080B12] text-slate-200 font-sans antialiased min-h-screen flex flex-col">
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyBaoWeLtTGQjUBTSdjOIc35DrYap-lyH6c",
-        authDomain: "leadership-professional.firebaseapp.com",
-        databaseURL: "https://leadership-professional-default-rtdb.firebaseio.com",
-        projectId: "leadership-professional",
-        storageBucket: "leadership-professional.firebasestorage.app",
-        messagingSenderId: "620428076068",
-        appId: "1:620428076068:web:f4f0aa97b7282830d1a4b1"
-    };
+    <header class="border-b border-slate-800/50 bg-[#0a0e16] sticky top-0 z-50">
+        <div class="max-w-[96rem] mx-auto px-6 py-2.5 flex items-center justify-between">
+            <div class="flex items-center space-x-4 space-x-reverse">
+                <a href="index.html" class="text-slate-400 hover:text-white text-sm font-bold bg-[#0c1019] px-3.5 py-2 rounded-lg border border-slate-700">🏠 الرئيسية</a>
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="logoutAdmin()" class="text-xs text-red-400 border border-red-500/50 px-3 py-1 rounded hover:bg-red-500/10">تسجيل الخروج</button>
+                <div class="text-white font-extrabold text-sm">LSPD ADMIN</div>
+            </div>
+        </div>
+    </header>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    window.checkAcc = function() {
-        if (localStorage.getItem('isAdminLoggedIn') === 'true') {
-            document.getElementById('adminView').classList.remove('hidden');
-            document.getElementById('errorView').classList.add('hidden');
-            loadData(); drawQ();
-        } else {
-            document.getElementById('errorView').classList.remove('hidden');
-        }
-    }
-    
-    window.login = function(val) { if(val==='3HH3'||val==='(F!GtqAX!GZ8VU/M)') { localStorage.setItem('isAdminLoggedIn','true'); checkAcc(); } }
-    window.logoutAdmin = function() { localStorage.removeItem('isAdminLoggedIn'); location.reload(); }
-    
-    window.switchTab = function(id) {
-        document.querySelectorAll('.tab-content').forEach(e => e.classList.add('hidden'));
-        document.querySelectorAll('.tab-btn').forEach(b => { b.className = "tab-btn bg-[#0c1019] text-slate-300 border border-slate-800 font-bold px-6 py-3 rounded-xl text-sm flex-1"; });
-        document.getElementById('tab-'+id).classList.remove('hidden');
-        document.getElementById('tabBtn-'+id).className = "tab-btn bg-amber-400 text-slate-950 font-bold px-6 py-3 rounded-xl text-sm flex-1";
-    }
-
-    // جلب الاختبارات من فايربيس
-    window.loadData = async function() {
-        let snapshot = await get(child(ref(db), 'submissions'));
-        let subs = snapshot.exists() ? Object.values(snapshot.val()) : [];
+    <main class="max-w-6xl mx-auto px-6 py-12 flex-grow w-full">
         
-        document.getElementById('resultsList').innerHTML = ''; document.getElementById('decisionsList').innerHTML = ''; document.getElementById('dbTbody').innerHTML = '';
-        
-        subs.forEach((s) => {
-            document.getElementById('resultsList').innerHTML += `
-            <div class="bg-[#141a27] border border-slate-700 p-5 rounded-2xl relative">
-                <button onclick="del('${s.id}')" class="absolute top-3 left-3 text-red-500 text-xs">✕ حذف</button>
-                <div class="flex justify-between items-center mb-3">
-                    <div><strong class="text-white">${s.fullName}</strong> <span class="bg-blue-500/20 text-blue-400 text-[10px] px-2 rounded">${s.targetRank}</span></div>
-                    <button onclick="document.getElementById('det_${s.id}').classList.toggle('hidden')" class="bg-slate-800 px-3 py-1 rounded text-xs">كشف الإجابات</button>
+        <!-- صفحة تسجيل الدخول للمشرفين -->
+        <div id="errorView" class="max-w-md mx-auto bg-[#0c1019] border border-slate-800 p-8 rounded-3xl shadow-xl text-center">
+            <h2 class="text-2xl font-bold text-amber-400 mb-6">تسجيل الدخول للقيادة</h2>
+            <input type="password" id="adminPass" placeholder="الرمز السري" class="w-full bg-[#141a27] border border-slate-700 rounded-xl px-4 py-3 text-center text-white mb-4">
+            <button onclick="login(document.getElementById('adminPass').value)" class="w-full bg-amber-400 text-black font-bold py-3 rounded-xl">دخول</button>
+        </div>
+
+        <!-- لوحة التحكم الفعلية -->
+        <div id="adminView" class="hidden">
+            <div class="flex gap-2 mb-6">
+                <button id="tabBtn-results" onclick="switchTab('results')" class="tab-btn bg-amber-400 text-slate-950 font-bold px-6 py-3 rounded-xl text-sm flex-1">التقييم والتصحيح</button>
+                <button id="tabBtn-decisions" onclick="switchTab('decisions')" class="tab-btn bg-[#0c1019] text-slate-300 border border-slate-800 font-bold px-6 py-3 rounded-xl text-sm flex-1">إصدار القرارات</button>
+                <button id="tabBtn-questions" onclick="switchTab('questions')" class="tab-btn bg-[#0c1019] text-slate-300 border border-slate-800 font-bold px-6 py-3 rounded-xl text-sm flex-1">إدارة الأسئلة</button>
+                <button id="tabBtn-database" onclick="switchTab('database')" class="tab-btn bg-[#0c1019] text-slate-300 border border-slate-800 font-bold px-6 py-3 rounded-xl text-sm flex-1">قاعدة البيانات</button>
+            </div>
+
+            <div id="tab-results" class="tab-content bg-[#0c1019] border border-slate-800 p-6 rounded-3xl">
+                <h2 class="text-xl font-bold text-white mb-4">الاختبارات بانتظار التقييم</h2>
+                <div id="resultsList" class="space-y-4"></div>
+            </div>
+
+            <div id="tab-decisions" class="tab-content hidden bg-[#0c1019] border border-slate-800 p-6 rounded-3xl">
+                <h2 class="text-xl font-bold text-white mb-4">إصدار القرارات النهائية</h2>
+                <div id="decisionsList" class="space-y-4"></div>
+            </div>
+
+            <div id="tab-questions" class="tab-content hidden bg-[#0c1019] border border-slate-800 p-6 rounded-3xl">
+                <h2 class="text-xl font-bold text-white mb-4">إعداد الأسئلة</h2>
+                <div class="flex gap-4 mb-4">
+                    <select id="qRank" onchange="loadQ()" class="bg-[#141a27] text-white p-2 rounded border border-slate-700 flex-1"><option value="C4">C4</option><option value="C6">C6</option></select>
+                    <input type="number" id="qCount" onchange="loadQ()" value="5" min="1" class="bg-[#141a27] text-white p-2 rounded border border-slate-700 w-24" placeholder="العدد">
+                    <input type="number" id="qTime" value="5" min="1" class="bg-[#141a27] text-white p-2 rounded border border-slate-700 w-24" placeholder="الدقائق">
                 </div>
-                <div id="det_${s.id}" class="hidden space-y-4 pt-3 border-t border-slate-700">
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <div class="bg-[#0c1019] p-4 rounded-lg border border-slate-800 text-xs text-slate-300">
-                            <h3 class="text-amber-400 font-bold mb-2">📝 الاختبار النظري</h3>
-                            ${s.answersDetails}
+                <div id="qBox" class="space-y-4 mb-4"></div>
+                <button onclick="saveQ()" class="w-full bg-emerald-500 text-white font-bold py-3 rounded-xl">حفظ ورفع الأسئلة</button>
+            </div>
+
+            <div id="tab-database" class="tab-content hidden bg-[#0c1019] border border-slate-800 p-6 rounded-3xl">
+                <h2 class="text-xl font-bold text-white mb-4">سجل البيانات الشامل</h2>
+                <table class="w-full text-sm text-left text-slate-300">
+                    <thead class="bg-[#141a27] text-amber-400"><tr><th class="p-3 text-right">الاسم</th><th class="p-3 text-right">الرتبة</th><th class="p-3 text-right">النسبة</th><th class="p-3 text-right">القرار</th></tr></thead>
+                    <tbody id="dbTbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- كود البرمجة الخاص بلوحة التحكم -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getDatabase, ref, set, get, child, remove, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBaoWeLtTGQjUBTSdjOIc35DrYap-lyH6c",
+            authDomain: "leadership-professional.firebaseapp.com",
+            databaseURL: "https://leadership-professional-default-rtdb.firebaseio.com",
+            projectId: "leadership-professional",
+            storageBucket: "leadership-professional.firebasestorage.app",
+            messagingSenderId: "620428076068",
+            appId: "1:620428076068:web:f4f0aa97b7282830d1a4b1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.checkAcc = function() {
+            if (localStorage.getItem('isAdminLoggedIn') === 'true') {
+                document.getElementById('adminView').classList.remove('hidden');
+                document.getElementById('errorView').classList.add('hidden');
+                loadData(); drawQ();
+            } else {
+                document.getElementById('errorView').classList.remove('hidden');
+            }
+        }
+        
+        window.login = function(val) { if(val==='3HH3'||val==='(F!GtqAX!GZ8VU/M)') { localStorage.setItem('isAdminLoggedIn','true'); checkAcc(); } }
+        window.logoutAdmin = function() { localStorage.removeItem('isAdminLoggedIn'); location.reload(); }
+        
+        window.switchTab = function(id) {
+            document.querySelectorAll('.tab-content').forEach(e => e.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(b => { b.className = "tab-btn bg-[#0c1019] text-slate-300 border border-slate-800 font-bold px-6 py-3 rounded-xl text-sm flex-1"; });
+            document.getElementById('tab-'+id).classList.remove('hidden');
+            document.getElementById('tabBtn-'+id).className = "tab-btn bg-amber-400 text-slate-950 font-bold px-6 py-3 rounded-xl text-sm flex-1";
+        }
+
+        window.loadData = async function() {
+            let snapshot = await get(child(ref(db), 'submissions'));
+            let subs = snapshot.exists() ? Object.values(snapshot.val()) : [];
+            
+            document.getElementById('resultsList').innerHTML = ''; document.getElementById('decisionsList').innerHTML = ''; document.getElementById('dbTbody').innerHTML = '';
+            
+            subs.forEach((s) => {
+                document.getElementById('resultsList').innerHTML += `
+                <div class="bg-[#141a27] border border-slate-700 p-5 rounded-2xl relative">
+                    <button onclick="del('${s.id}')" class="absolute top-3 left-3 text-red-500 text-xs">✕ حذف</button>
+                    <div class="flex justify-between items-center mb-3">
+                        <div><strong class="text-white">${s.fullName}</strong> <span class="bg-blue-500/20 text-blue-400 text-[10px] px-2 rounded">${s.targetRank}</span></div>
+                        <button onclick="document.getElementById('det_${s.id}').classList.toggle('hidden')" class="bg-slate-800 px-3 py-1 rounded text-xs text-white">كشف الإجابات</button>
+                    </div>
+                    <div id="det_${s.id}" class="hidden space-y-4 pt-3 border-t border-slate-700">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="bg-[#0c1019] p-4 rounded-lg border border-slate-800 text-xs text-slate-300">
+                                <h3 class="text-amber-400 font-bold mb-2">📝 الاختبار النظري</h3>
+                                ${s.answersDetails}
+                            </div>
+                            <div class="bg-[#0c1019] p-4 rounded-lg border border-slate-800">
+                                <h3 class="text-blue-400 font-bold mb-2 text-xs">💻 محاكاة MDT</h3>
+                                ${s.mdtReport}
+                            </div>
                         </div>
-                        <div class="bg-[#0c1019] p-4 rounded-lg border border-slate-800">
-                            <h3 class="text-blue-400 font-bold mb-2 text-xs">💻 محاكاة MDT</h3>
-                            ${s.mdtReport}
+                        <div class="flex gap-2 bg-[#0c1019] p-2 rounded">
+                            <input type="text" id="score_${s.id}" value="${s.percentage !== 'قيد التقييم' ? s.percentage : ''}" placeholder="النسبة %" class="bg-[#141a27] p-1.5 text-xs text-white rounded outline-none border border-slate-700">
+                            <select id="qual_${s.id}" class="bg-[#141a27] p-1.5 text-xs text-white rounded outline-none border border-slate-700"><option ${s.qualified=='مؤهل'?'selected':''}>مؤهل</option><option ${s.qualified=='غير مؤهل'?'selected':''}>غير مؤهل</option></select>
+                            <button onclick="saveEval('${s.id}')" class="bg-amber-400 text-black px-4 rounded text-xs font-bold">حفظ</button>
                         </div>
                     </div>
-                    <div class="flex gap-2 bg-[#0c1019] p-2 rounded">
-                        <input type="text" id="score_${s.id}" value="${s.percentage !== 'قيد التقييم' ? s.percentage : ''}" placeholder="النسبة %" class="bg-[#141a27] p-1.5 text-xs text-white rounded outline-none border border-slate-700">
-                        <select id="qual_${s.id}" class="bg-[#141a27] p-1.5 text-xs text-white rounded outline-none border border-slate-700"><option ${s.qualified=='مؤهل'?'selected':''}>مؤهل</option><option ${s.qualified=='غير مؤهل'?'selected':''}>غير مؤهل</option></select>
-                        <button onclick="saveEval('${s.id}')" class="bg-amber-400 text-black px-4 rounded text-xs font-bold">حفظ</button>
+                </div>`;
+
+                document.getElementById('decisionsList').innerHTML += `
+                <div class="bg-[#141a27] border border-slate-700 p-4 rounded-xl flex justify-between items-center">
+                    <div><span class="text-white text-sm font-bold">${s.fullName}</span> <span class="text-xs text-slate-400">(${s.percentage})</span></div>
+                    <div class="flex gap-2">
+                        <button onclick="setDec('${s.id}', 'قبول')" class="bg-emerald-600 px-3 py-1 rounded text-xs text-white">قبول</button>
+                        <button onclick="setDec('${s.id}', 'رفض')" class="bg-red-600 px-3 py-1 rounded text-xs text-white">رفض</button>
+                        <button onclick="setDec('${s.id}', 'فرصة ثانية')" class="bg-amber-600 px-3 py-1 rounded text-xs text-white">إعادة</button>
                     </div>
-                </div>
-            </div>`;
+                </div>`;
 
-            document.getElementById('decisionsList').innerHTML += `
-            <div class="bg-[#141a27] border border-slate-700 p-4 rounded-xl flex justify-between items-center">
-                <div><span class="text-white text-sm font-bold">${s.fullName}</span> <span class="text-xs text-slate-400">(${s.percentage})</span></div>
-                <div class="flex gap-2">
-                    <button onclick="setDec('${s.id}', 'قبول')" class="bg-emerald-600 px-3 py-1 rounded text-xs text-white">قبول</button>
-                    <button onclick="setDec('${s.id}', 'رفض')" class="bg-red-600 px-3 py-1 rounded text-xs text-white">رفض</button>
-                    <button onclick="setDec('${s.id}', 'فرصة ثانية')" class="bg-amber-600 px-3 py-1 rounded text-xs text-white">إعادة</button>
-                </div>
-            </div>`;
-
-            document.getElementById('dbTbody').innerHTML += `<tr class="border-b border-slate-800"><td class="p-3 text-white">${s.fullName}</td><td class="p-3">${s.targetRank}</td><td class="p-3">${s.percentage}</td><td class="p-3">${s.decision}</td></tr>`;
-        });
-    }
-
-    window.saveEval = async function(id) {
-        let p = document.getElementById('score_'+id).value; 
-        let q = document.getElementById('qual_'+id).value;
-        await update(ref(db, 'submissions/' + id), { percentage: p, qualified: q });
-        loadData(); alert('تم الحفظ بالخادم السحابي!');
-    }
-    
-    window.setDec = async function(id, d) {
-        await update(ref(db, 'submissions/' + id), { decision: d });
-        loadData();
-    }
-    
-    window.del = async function(id) {
-        if(confirm('متأكد؟')){ await remove(ref(db, 'submissions/' + id)); loadData(); }
-    }
-
-    // إدارة الأسئلة السحابية
-    window.drawQ = async function() {
-        let rank = document.getElementById('qRank').value; 
-        let count = document.getElementById('qCount').value;
-        
-        let snapshot = await get(child(ref(db), 'questions_' + rank));
-        let saved = snapshot.exists() ? snapshot.val() : {questions:[], timerMinutes:5};
-        
-        document.getElementById('qTime').value = saved.timerMinutes || 5;
-        let html = '';
-        for(let i=0; i<count; i++) {
-            let q = saved.questions[i] || {text:'', type:'essay', options:['','','','']};
-            html += `<div class="bg-[#141a27] p-3 rounded border border-slate-700">
-                <input type="text" id="qt_${i}" value="${q.text}" placeholder="نص السؤال" class="w-full bg-[#0c1019] p-2 text-xs text-white rounded mb-2">
-                <select id="qty_${i}" onchange="document.getElementById('qo_${i}').style.display = this.value==='mcq'?'grid':'none'" class="bg-[#0c1019] p-1 text-xs text-white rounded w-full mb-2"><option value="essay" ${q.type=='essay'?'selected':''}>مقال</option><option value="mcq" ${q.type=='mcq'?'selected':''}>خيارات</option></select>
-                <div id="qo_${i}" style="display:${q.type=='mcq'?'grid':'none'}" class="grid-cols-2 gap-2"><input id="qo_${i}_0" value="${q.options[0]}" class="bg-[#0c1019] p-1 text-xs text-white rounded"><input id="qo_${i}_1" value="${q.options[1]}" class="bg-[#0c1019] p-1 text-xs text-white rounded"><input id="qo_${i}_2" value="${q.options[2]}" class="bg-[#0c1019] p-1 text-xs text-white rounded"><input id="qo_${i}_3" value="${q.options[3]}" class="bg-[#0c1019] p-1 text-xs text-white rounded"></div>
-            </div>`;
+                document.getElementById('dbTbody').innerHTML += `<tr class="border-b border-slate-800"><td class="p-3 text-white">${s.fullName}</td><td class="p-3">${s.targetRank}</td><td class="p-3">${s.percentage}</td><td class="p-3">${s.decision}</td></tr>`;
+            });
         }
-        document.getElementById('qBox').innerHTML = html;
-    }
-    
-    window.loadQ = function() { drawQ(); }
-    
-    window.saveQ = async function() {
-        let rank = document.getElementById('qRank').value; let count = document.getElementById('qCount').value; let time = document.getElementById('qTime').value;
-        let qs = [];
-        for(let i=0; i<count; i++) {
-            let text = document.getElementById('qt_'+i).value; let type = document.getElementById('qty_'+i).value;
-            if(text) qs.push({text:text, type:type, options:[document.getElementById(`qo_${i}_0`)?.value||'',document.getElementById(`qo_${i}_1`)?.value||'',document.getElementById(`qo_${i}_2`)?.value||'',document.getElementById(`qo_${i}_3`)?.value||'']});
-        }
-        await set(ref(db, 'questions_' + rank), {questions:qs, timerMinutes:time});
-        alert('تم رفع الأسئلة للقاعدة السحابية بنجاح!');
-    }
 
-    window.onload = checkAcc;
-</script>
+        window.saveEval = async function(id) {
+            let p = document.getElementById('score_'+id).value; 
+            let q = document.getElementById('qual_'+id).value;
+            await update(ref(db, 'submissions/' + id), { percentage: p, qualified: q });
+            loadData(); alert('تم الحفظ بالخادم السحابي!');
+        }
+        
+        window.setDec = async function(id, d) {
+            await update(ref(db, 'submissions/' + id), { decision: d });
+            loadData();
+        }
+        
+        window.del = async function(id) {
+            if(confirm('متأكد؟')){ await remove(ref(db, 'submissions/' + id)); loadData(); }
+        }
+
+        window.drawQ = async function() {
+            let rank = document.getElementById('qRank').value; 
+            let count = document.getElementById('qCount').value;
+            
+            let snapshot = await get(child(ref(db), 'questions_' + rank));
+            let saved = snapshot.exists() ? snapshot.val() : {questions:[], timerMinutes:5};
+            
+            document.getElementById('qTime').value = saved.timerMinutes || 5;
+            let html = '';
+            for(let i=0; i<count; i++) {
+                let q = saved.questions[i] || {text:'', type:'essay', options:['','','','']};
+                html += `<div class="bg-[#141a27] p-3 rounded border border-slate-700">
+                    <input type="text" id="qt_${i}" value="${q.text}" placeholder="نص السؤال" class="w-full bg-[#0c1019] p-2 text-xs text-white rounded mb-2">
+                    <select id="qty_${i}" onchange="document.getElementById('qo_${i}').style.display = this.value==='mcq'?'grid':'none'" class="bg-[#0c1019] p-1 text-xs text-white rounded w-full mb-2"><option value="essay" ${q.type=='essay'?'selected':''}>مقال</option><option value="mcq" ${q.type=='mcq'?'selected':''}>خيارات</option></select>
+                    <div id="qo_${i}" style="display:${q.type=='mcq'?'grid':'none'}" class="grid-cols-2 gap-2"><input id="qo_${i}_0" value="${q.options[0]}" class="bg-[#0c1019] p-1 text-xs text-white rounded"><input id="qo_${i}_1" value="${q.options[1]}" class="bg-[#0c1019] p-1 text-xs text-white rounded"><input id="qo_${i}_2" value="${q.options[2]}" class="bg-[#0c1019] p-1 text-xs text-white rounded"><input id="qo_${i}_3" value="${q.options[3]}" class="bg-[#0c1019] p-1 text-xs text-white rounded"></div>
+                </div>`;
+            }
+            document.getElementById('qBox').innerHTML = html;
+        }
+        
+        window.loadQ = function() { drawQ(); }
+        
+        window.saveQ = async function() {
+            let rank = document.getElementById('qRank').value; let count = document.getElementById('qCount').value; let time = document.getElementById('qTime').value;
+            let qs = [];
+            for(let i=0; i<count; i++) {
+                let text = document.getElementById('qt_'+i).value; let type = document.getElementById('qty_'+i).value;
+                if(text) qs.push({text:text, type:type, options:[document.getElementById(`qo_${i}_0`)?.value||'',document.getElementById(`qo_${i}_1`)?.value||'',document.getElementById(`qo_${i}_2`)?.value||'',document.getElementById(`qo_${i}_3`)?.value||'']});
+            }
+            await set(ref(db, 'questions_' + rank), {questions:qs, timerMinutes:time});
+            alert('تم رفع الأسئلة للقاعدة السحابية بنجاح!');
+        }
+
+        window.onload = checkAcc;
+    </script>
+</body>
+</html>
