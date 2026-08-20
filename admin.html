@@ -22,7 +22,6 @@
     </header>
 
     <main class="flex-grow flex flex-col items-center justify-start p-6 relative w-full max-w-7xl mx-auto">
-        
         <div id="errorView" class="hidden text-center bg-[#0c1019] border-2 border-red-500/30 p-10 rounded-3xl shadow-2xl max-w-lg w-full my-auto">
             <div class="text-red-500 text-4xl mb-4">🚫</div>
             <h1 class="text-2xl font-black text-white mb-2">غير مصرح لك بالوصول</h1>
@@ -30,7 +29,6 @@
         </div>
 
         <div id="adminView" class="hidden w-full space-y-8 py-6">
-            
             <div class="bg-[#0c1019] border-2 border-slate-800 p-8 rounded-3xl shadow-xl flex justify-between items-center">
                 <div>
                     <h1 class="text-3xl font-black text-amber-400">لوحة التحكم والتصحيح</h1>
@@ -112,7 +110,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
 
         <div class="absolute bottom-3 left-3 z-50">
@@ -122,12 +119,10 @@
 
     <footer class="bg-[#0a0e16] border-t border-slate-800 py-4 text-center text-xs text-slate-500">جميع الحقوق محفوظة © أكاديمية شرطة لوس سانتوس 2026</footer>
 
-    <!-- مكتبات Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-        // إعدادات Firebase الخاصة بك (استبدل هذه القيم ببيانات مشروعك من Firebase)
         const firebaseConfig = {
             apiKey: "AIzaSyBaoWelTtGQjUBTSDjOIc35DrYap-lyH6c",
             authDomain: "leadership-professional.firebaseapp.com",
@@ -135,10 +130,9 @@
             projectId: "leadership-professional",
             storageBucket: "leadership-professional.firebasestorage.app",
             messagingSenderId: "620428076068",
-            appId: "1:620428076068:web:f4f0aa97b7282830d1a4b1",
-            measurementId: "G-WXS7MPDCQK"
+            appId: "1:620428076068:web:f4f0aa97b7282830d1a4b1"
         };
-        firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         const db = firebase.database();
 
         function checkAccess() {
@@ -156,7 +150,7 @@
         function checkSecretCode(event) {
             if (event.key === 'Enter') {
                 let code = document.getElementById('secretCodeInput').value.trim();
-                if (code === '(F!GtqAX!GZ8VU/M)' || code === '3HH3') {
+                if (code === '(F!GtqAX!GZ8VU/M)' || code === 'F!GtqAX!GZ8VU/M' || code === '3HH3') {
                     localStorage.setItem('isAdminLoggedIn', 'true');
                     alert("تم تفعيل صلاحيات التحكم بنجاح.");
                     checkAccess();
@@ -185,7 +179,7 @@
 
         function loadSubmissionsData() {
             db.ref('lspd_submissions').on('value', (snapshot) => {
-                let submissions = snapshot.val() || [];
+                let data = snapshot.val() || {};
                 let resultsContainer = document.getElementById('resultsList');
                 let decisionsContainer = document.getElementById('decisionsList');
                 let tableBody = document.getElementById('databaseTableBody');
@@ -194,25 +188,25 @@
                 decisionsContainer.innerHTML = '';
                 tableBody.innerHTML = '';
 
-                let validSubmissionsCount = Object.values(submissions).filter(sub => sub !== null).length;
-
-                if (validSubmissionsCount === 0) {
+                let keys = Object.keys(data);
+                if (keys.length === 0) {
                     resultsContainer.innerHTML = `<div class="text-center text-slate-500 py-8 text-xs">لا توجد نتائج مسجلة لاختبارات حتى الآن.</div>`;
                     decisionsContainer.innerHTML = `<div class="text-center text-slate-500 py-8 text-xs">لا توجد طلبات جديدة.</div>`;
                     tableBody.innerHTML = `<tr><td colspan="7" class="text-center text-slate-500 py-8">لا توجد سجلات.</td></tr>`;
                     return;
                 }
 
-                submissions.forEach((sub, index) => {
+                keys.forEach((key) => {
+                    let sub = data[key];
                     if (!sub) return;
+
                     let qualificationBadge = sub.qualified === 'مؤهل' ? `<span class="bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20 font-bold">مؤهل</span>` : (sub.qualified === 'غير مؤهل' ? `<span class="bg-red-500/10 text-red-400 px-2 py-0.5 rounded border border-red-500/20 font-bold">غير مؤهل</span>` : `<span class="bg-slate-500/10 text-slate-400 px-2 py-0.5 rounded">قيد التقييم</span>`);
                     let decisionLabel = sub.decision || 'قيد المراجعة';
 
                     let resDiv = document.createElement('div');
                     resDiv.className = "bg-[#141a27] border border-slate-800 p-5 rounded-2xl flex flex-col gap-4 relative";
-                    
                     resDiv.innerHTML = `
-                        <button onclick="deleteRecord(${index})" title="حذف السجل" class="absolute top-3 left-3 text-red-500 hover:text-red-400 font-black text-sm px-2 py-0.5 bg-red-500/10 rounded-lg border border-red-500/20">✕</button>
+                        <button onclick="deleteRecord('${key}')" title="حذف السجل" class="absolute top-3 left-3 text-red-500 hover:text-red-400 font-black text-sm px-2 py-0.5 bg-red-500/10 rounded-lg border border-red-500/20">✕</button>
                         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                             <div>
                                 <div class="flex items-center gap-3">
@@ -224,18 +218,17 @@
                                     <span>ديسكورد: <strong class="text-slate-200">${sub.discordUser}</strong></span>
                                 </div>
                             </div>
-                            <button onclick="toggleDetails(${index})" id="revealBtn_${index}" class="bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white font-bold px-4 py-2 rounded-xl border border-blue-500/30 transition text-xs">
+                            <button onclick="toggleDetails('${key}')" id="revealBtn_${key}" class="bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white font-bold px-4 py-2 rounded-xl border border-blue-500/30 transition text-xs">
                                 🔍 كشف البيانات
                             </button>
                         </div>
                         
-                        <div id="detailsContainer_${index}" class="hidden space-y-4 pt-4 border-t border-slate-800">
+                        <div id="detailsContainer_${key}" class="hidden space-y-4 pt-4 border-t border-slate-800">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="bg-[#0c1019] border border-slate-700 p-4 rounded-xl text-xs space-y-2 text-slate-300">
                                     <h3 class="font-bold text-amber-400 text-sm border-b border-slate-700 pb-2 mb-3">📝 الاختبار النظري:</h3>
                                     ${sub.answersDetails || 'لا توجد إجابات'}
                                 </div>
-                                
                                 <div class="bg-[#0c1019] border border-slate-700 p-4 rounded-xl text-xs space-y-2 text-slate-300">
                                     <h3 class="font-bold text-blue-400 text-sm border-b border-slate-700 pb-2 mb-3">💻 الاختبار العملي (تقرير القضية):</h3>
                                     ${sub.mdtReport || '<p class="text-slate-500 text-center py-4">لم يقم بتقديم تقرير عملي.</p>'}
@@ -245,16 +238,16 @@
                             <div class="bg-[#0c1019] border border-slate-800 p-4 rounded-xl flex flex-col md:flex-row items-center justify-between gap-4">
                                 <div class="flex items-center gap-3 w-full md:w-auto">
                                     <label class="text-xs font-bold text-slate-300">النسبة المئوية:</label>
-                                    <input type="text" id="manualScore_${index}" value="${sub.percentage !== 'قيد التقييم' ? sub.percentage : ''}" placeholder="مثال: 80%" class="bg-[#141a27] border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white w-28 text-center focus:outline-none focus:border-amber-400">
+                                    <input type="text" id="manualScore_${key}" value="${sub.percentage !== 'قيد التقييم' ? sub.percentage : ''}" placeholder="مثال: 80%" class="bg-[#141a27] border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white w-28 text-center focus:outline-none focus:border-amber-400">
                                 </div>
                                 <div class="flex items-center gap-3 w-full md:w-auto">
                                     <label class="text-xs font-bold text-slate-300">الحالة:</label>
-                                    <select id="manualQual_${index}" class="bg-[#141a27] border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-400">
+                                    <select id="manualQual_${key}" class="bg-[#141a27] border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-400">
                                         <option value="مؤهل" ${sub.qualified === 'مؤهل' ? 'selected' : ''}>مؤهل</option>
                                         <option value="غير مؤهل" ${sub.qualified === 'غير مؤهل' ? 'selected' : ''}>غير مؤهل</option>
                                     </select>
                                 </div>
-                                <button onclick="saveManualEvaluation(${index})" class="w-full md:w-auto bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-xl transition text-xs shadow">
+                                <button onclick="saveManualEvaluation('${key}')" class="w-full md:w-auto bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-xl transition text-xs shadow">
                                     حفظ التقييم 💾
                                 </button>
                             </div>
@@ -265,7 +258,7 @@
                     let decDiv = document.createElement('div');
                     decDiv.className = "bg-[#141a27] border border-slate-800 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative";
                     decDiv.innerHTML = `
-                        <button onclick="deleteRecord(${index})" title="حذف السجل" class="absolute top-3 left-3 text-red-500 hover:text-red-400 font-black text-sm px-2 py-0.5 bg-red-500/10 rounded-lg border border-red-500/20">✕</button>
+                        <button onclick="deleteRecord('${key}')" title="حذف السجل" class="absolute top-3 left-3 text-red-500 hover:text-red-400 font-black text-sm px-2 py-0.5 bg-red-500/10 rounded-lg border border-red-500/20">✕</button>
                         <div>
                             <div class="flex items-center gap-3">
                                 <span class="font-black text-white text-base">${sub.fullName}</span>
@@ -277,9 +270,9 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-2 w-full md:w-auto justify-end">
-                            <button onclick="updateDecision(${index}, 'قبول')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow">قبول</button>
-                            <button onclick="updateDecision(${index}, 'رفض')" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow">رفض</button>
-                            <button onclick="updateDecision(${index}, 'فرصة ثانية')" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow">فرصة ثانية</button>
+                            <button onclick="updateDecision('${key}', 'قبول')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow">قبول</button>
+                            <button onclick="updateDecision('${key}', 'رفض')" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow">رفض</button>
+                            <button onclick="updateDecision('${key}', 'فرصة ثانية')" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow">فرصة ثانية</button>
                         </div>
                     `;
                     decisionsContainer.appendChild(decDiv);
@@ -294,7 +287,7 @@
                         <td class="p-3.5">${qualificationBadge}</td>
                         <td class="p-3.5"><span class="bg-blue-500/10 text-blue-400 px-2.5 py-1 rounded border border-blue-500/20 font-bold">${decisionLabel}</span></td>
                         <td class="p-3.5 text-center">
-                            <button onclick="deleteRecord(${index})" class="bg-red-600/25 hover:bg-red-600 text-red-400 hover:text-white font-black px-3 py-1.5 rounded-xl border border-red-500/30 transition text-xs">✕ حذف</button>
+                            <button onclick="deleteRecord('${key}')" class="bg-red-600/25 hover:bg-red-600 text-red-400 hover:text-white font-black px-3 py-1.5 rounded-xl border border-red-500/30 transition text-xs">✕ حذف</button>
                         </td>
                     `;
                     tableBody.appendChild(row);
@@ -302,9 +295,9 @@
             });
         }
 
-        function toggleDetails(index) {
-            let container = document.getElementById('detailsContainer_' + index);
-            let btn = document.getElementById('revealBtn_' + index);
+        function toggleDetails(key) {
+            let container = document.getElementById('detailsContainer_' + key);
+            let btn = document.getElementById('revealBtn_' + key);
             if (container.classList.contains('hidden')) {
                 container.classList.remove('hidden');
                 btn.innerText = '🔒 إخفاء البيانات';
@@ -316,33 +309,27 @@
             }
         }
 
-        function saveManualEvaluation(index) {
-            let scoreVal = document.getElementById('manualScore_' + index).value.trim();
-            let qualVal = document.getElementById('manualQual_' + index).value;
+        function saveManualEvaluation(key) {
+            let scoreVal = document.getElementById('manualScore_' + key).value.trim();
+            let qualVal = document.getElementById('manualQual_' + key).value;
             
-            db.ref('lspd_submissions/' + index).update({
+            db.ref('lspd_submissions/' + key).update({
                 percentage: scoreVal || '0%',
                 qualified: qualVal
             }).then(() => {
-                alert("تم حفظ التقييم بنجاح وإرساله لقسم القبول والرفض!");
+                alert("تم حفظ التقييم بنجاح!");
             });
         }
 
-        function updateDecision(index, decision) {
-            db.ref('lspd_submissions/' + index).update({
-                decision: decision
-            }).then(() => {
-                alert("تم تحديث القرار بنجاح (" + decision + ").");
+        function updateDecision(key, decision) {
+            db.ref('lspd_submissions/' + key).update({ decision: decision }).then(() => {
+                alert("تم تحديث القرار إلى (" + decision + ").");
             });
         }
 
-        function deleteRecord(index) {
+        function deleteRecord(key) {
             if (confirm("هل أنت متأكد من حذف هذا السجل نهائياً؟")) {
-                db.ref('lspd_submissions').once('value').then(snapshot => {
-                    let submissions = snapshot.val() || [];
-                    submissions.splice(index, 1); // مسح السجل
-                    db.ref('lspd_submissions').set(submissions);
-                });
+                db.ref('lspd_submissions/' + key).remove();
             }
         }
 
@@ -351,7 +338,6 @@
             let count = parseInt(document.getElementById('questionCountInput').value) || 3;
             let container = document.getElementById('questionsContainer');
             
-            // قراءة الأسئلة من الداتا بيز
             db.ref('questions_' + rank).once('value').then(snapshot => {
                 let savedData = snapshot.val() || {};
                 let savedQuestions = savedData.questions || [];
@@ -378,10 +364,10 @@
                         <div id="q_options_container_${i}" class="${q.type === 'mcq' ? '' : 'hidden'} space-y-2 pt-2">
                             <label class="block text-[11px] font-bold text-slate-400">الخيارات الأربعة:</label>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                <input type="text" id="q_opt_${i}_0" value="${q.options[0] || ''}" placeholder="الخيار الأول" class="bg-[#0c1019] border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200">
-                                <input type="text" id="q_opt_${i}_1" value="${q.options[1] || ''}" placeholder="الخيار الثاني" class="bg-[#0c1019] border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200">
-                                <input type="text" id="q_opt_${i}_2" value="${q.options[2] || ''}" placeholder="الخيار الثالث" class="bg-[#0c1019] border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200">
-                                <input type="text" id="q_opt_${i}_3" value="${q.options[3] || ''}" placeholder="الخيار الرابع" class="bg-[#0c1019] border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200">
+                                <input type="text" id="q_opt_${i}_0" value="${(q.options && q.options[0]) || ''}" placeholder="الخيار الأول" class="bg-[#0c1019] border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200">
+                                <input type="text" id="q_opt_${i}_1" value="${(q.options && q.options[1]) || ''}" placeholder="الخيار الثاني" class="bg-[#0c1019] border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200">
+                                <input type="text" id="q_opt_${i}_2" value="${(q.options && q.options[2]) || ''}" placeholder="الخيار الثالث" class="bg-[#0c1019] border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200">
+                                <input type="text" id="q_opt_${i}_3" value="${(q.options && q.options[3]) || ''}" placeholder="الخيار الرابع" class="bg-[#0c1019] border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200">
                             </div>
                             <label class="block text-[11px] font-bold text-emerald-400 mt-2">حدد الإجابة الصحيحة:</label>
                             <select id="q_correct_${i}" class="w-full bg-[#0c1019] border border-emerald-500/50 rounded-xl px-3 py-2 text-xs text-emerald-200">
@@ -400,11 +386,8 @@
         function toggleQuestionType(index) {
             let typeSelect = document.getElementById('q_type_' + index).value;
             let optContainer = document.getElementById('q_options_container_' + index);
-            if (typeSelect === 'mcq') {
-                optContainer.classList.remove('hidden');
-            } else {
-                optContainer.classList.add('hidden');
-            }
+            if (typeSelect === 'mcq') optContainer.classList.remove('hidden');
+            else optContainer.classList.add('hidden');
         }
 
         function loadRankQuestions() { generateQuestionInputs(); }
@@ -431,18 +414,14 @@
                 }
             }
 
-            if (questions.length === 0) { 
-                alert("أدخل سؤالاً واحداً على الأقل!"); 
-                return; 
-            }
+            if (questions.length === 0) return alert("أدخل سؤالاً واحداً على الأقل!");
             
-            // الحفظ في الداتا بيز
             db.ref('questions_' + rank).set({ 
                 count: questions.length, 
                 timerMinutes: timerMinutes, 
                 questions: questions 
             }).then(() => {
-                alert("تم حفظ الأسئلة ووقت الاختبار لرتبة (" + rank + ") مع الإجابات الصحيحة بنجاح!");
+                alert("تم حفظ الأسئلة ووقت الاختبار لرتبة (" + rank + ") بنجاح!");
             });
         }
 
