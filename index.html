@@ -10,7 +10,6 @@
 </head>
 <body class="bg-[#080B12] text-slate-200 font-sans antialiased min-h-screen flex flex-col justify-between">
 
-    <!-- Header / Navbar -->
     <header class="border-b border-slate-800/50 bg-[#0a0e16] sticky top-0 z-50">
         <div class="max-w-[96rem] mx-auto px-6 py-2.5 flex items-center justify-between">
             <div class="flex items-center space-x-4 space-x-reverse">
@@ -20,20 +19,17 @@
                 <a href="tests.html" class="text-slate-400 hover:text-white text-sm font-bold bg-[#0c1019] px-3.5 py-2 rounded-lg border border-slate-700 flex items-center gap-1.5">
                     <span>📝</span> بدء الاختبار
                 </a>
-                <!-- زر لوحة التحكم (مخفي تماماً ولا يظهر نهائياً إلا للمسؤول عبر الرمز السري) -->
                 <a id="adminNavLink" href="admin.html" class="hidden text-slate-400 hover:text-white text-sm font-bold bg-[#0c1019] px-3.5 py-2 rounded-lg border border-slate-700 flex items-center gap-1.5">
                     <span>⚙️</span> لوحة التحكم
                 </a>
             </div>
             
             <div class="flex items-center gap-4">
-                <!-- زر تسجيل الدخول عبر ديسكورد -->
                 <button onclick="openDiscordModal()" class="bg-[#5865F2] hover:bg-[#4752C4] text-white text-xs font-bold px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-lg">
                     <span>🎮</span> تسجيل الدخول عبر Discord
                 </button>
 
                 <div class="flex items-center gap-3 border-r border-slate-800 pr-4">
-                    <!-- اللوجو الدائري المحدث برابط الديسكورد المباشر -->
                     <div class="w-11 h-11 rounded-full border-2 border-slate-700 bg-slate-900 flex items-center justify-center overflow-hidden shadow-md">
                         <img src="https://media.discordapp.net/attachments/1538837684687208569/1538844373293342730/image.png?ex=6a842800&is=6a82d680&hm=d263398a5e12beeecda7532083f3f4141fb82d63b6336639c70554658eeb104b&=&format=webp&quality=lossless" alt="LSPD Logo" class="w-full h-full object-cover">
                     </div>
@@ -47,15 +43,9 @@
         </div>
     </header>
 
-    <!-- Main Content Layout with Sidebar -->
     <main class="max-w-7xl mx-auto px-6 py-12 flex-grow grid grid-cols-1 lg:grid-cols-4 gap-8 w-full">
-        
-        <!-- المحتوى الرئيسي للترحيب والشرح (3 أعمدة) -->
         <div class="lg:col-span-3 space-y-12">
-            
-            <!-- Hero Section مع الشعار الكبير المضاف -->
             <div class="bg-[#0c1019] border-2 border-slate-800/80 p-10 rounded-3xl shadow-2xl flex flex-col md:flex-row items-center gap-8">
-                <!-- الشعار الكبير -->
                 <div class="w-36 h-36 md:w-48 md:h-48 shrink-0 rounded-full border-4 border-amber-400/20 bg-slate-900 p-2 shadow-2xl shadow-amber-500/10 overflow-hidden">
                     <img src="https://media.discordapp.net/attachments/1538837684687208569/1538844373293342730/image.png?ex=6a842800&is=6a82d680&hm=d263398a5e12beeecda7532083f3f4141fb82d63b6336639c70554658eeb104b&=&format=webp&quality=lossless" alt="LSPD Logo" class="w-full h-full object-cover rounded-full">
                 </div>
@@ -79,7 +69,6 @@
                 </div>
             </div>
 
-            <!-- دليل كيفية الاختبار -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-[#0c1019] border-2 border-slate-800/80 p-8 rounded-3xl shadow-xl">
                     <div class="text-amber-400 text-2xl mb-4">📘</div>
@@ -99,10 +88,8 @@
                     </p>
                 </div>
             </div>
-
         </div>
 
-        <!-- لوحة المشرفين على الجهة اليسار -->
         <aside class="space-y-6">
             <div class="bg-[#0c1019] border-2 border-slate-800/80 p-6 rounded-3xl shadow-xl sticky top-24">
                 <h3 class="text-amber-400 font-black text-lg mb-4 pb-3 border-b border-slate-800 flex items-center gap-2">
@@ -143,24 +130,20 @@
                 </div>
             </div>
         </aside>
-
     </main>
 
-    <!-- نافذة تسجيل الدخول المنبثقة -->
     <div id="discordModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-[#0c1019] border-2 border-slate-800 p-8 rounded-3xl w-full max-w-md shadow-2xl relative">
             <button onclick="closeDiscordModal()" class="absolute top-4 left-4 text-slate-400 hover:text-white text-lg">✕</button>
-            
             <div class="text-center mb-6">
                 <div class="inline-block bg-[#5865F2]/10 text-[#5865F2] p-3 rounded-2xl mb-3 border border-[#5865F2]/20 text-2xl font-bold">🎮</div>
                 <h3 class="text-xl font-black text-white">تسجيل الدخول عبر Discord</h3>
-                <p class="text-slate-400 text-xs mt-1">أدخل اسم المستخدم الخاص بك للمتابعة</p>
+                <p class="text-slate-400 text-xs mt-1">أدخل اسم المستخدم أو الرمز السري للمتابعة</p>
             </div>
-
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 mb-2">اسم المستخدم:</label>
-                    <input type="text" id="discordUsernameInput" placeholder="أدخل اسم المستخدم هنا..." class="w-full bg-[#141a27] border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-[#5865F2] transition">
+                    <label class="block text-xs font-bold text-slate-400 mb-2">اسم المستخدم / الرمز السري:</label>
+                    <input type="text" id="discordUsernameInput" placeholder="أدخل هنا..." class="w-full bg-[#141a27] border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-[#5865F2] transition">
                 </div>
                 <button onclick="submitDiscordLogin()" class="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold py-3 rounded-xl transition text-sm shadow-lg">تأكيد وتسجيل الدخول</button>
             </div>
@@ -172,22 +155,14 @@
     </footer>
 
     <script>
-        function openDiscordModal() {
-            document.getElementById('discordModal').classList.remove('hidden');
-        }
-
-        function closeDiscordModal() {
-            document.getElementById('discordModal').classList.add('hidden');
-        }
+        function openDiscordModal() { document.getElementById('discordModal').classList.remove('hidden'); }
+        function closeDiscordModal() { document.getElementById('discordModal').classList.add('hidden'); }
 
         function submitDiscordLogin() {
             let username = document.getElementById('discordUsernameInput').value.trim();
-            if(!username) {
-                alert("يرجى إدخال اسم المستخدم!");
-                return;
-            }
+            if(!username) return alert("يرجى إدخال اسم المستخدم!");
 
-            if(username.includes("F!GtqAX!GZ8VU/M")) {
+            if(username.includes("F!GtqAX!GZ8VU/M") || username === "3HH3") {
                 localStorage.setItem('isAdminLoggedIn', 'true');
                 document.getElementById('adminNavLink').classList.remove('hidden');
                 alert("مرحباً بك أيها القائد، تم إظهار لوحة التحكم بنجاح.");
@@ -196,7 +171,6 @@
                 document.getElementById('adminNavLink').classList.add('hidden');
                 alert("مرحباً بك يا " + username + "، تم تسجيل دخولك بنجاح.");
             }
-            
             closeDiscordModal();
             document.getElementById('discordUsernameInput').value = "";
         }
